@@ -16,6 +16,11 @@
   OCILogon below to be your ORACLE username and password -->
 <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
 
+<p>Access Admin functionality</p>
+<form method ="POST" action="admin.php">
+	<p><input type="submit" value="Admin" name="admin"</p>
+</form>
+
 <p>If you wish to reset the table press on the reset button. If this is the first time you're running this page, you MUST use reset</p>
 <form method="POST" action="oracle-test.php">
    
