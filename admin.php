@@ -91,47 +91,94 @@ function executeBoundSQL($cmdstr, $list) {
 			$success = False;
 		}
 	}
-
 }
 
-// Same as above, modified for generic table printing
-function printResult($name, $cols, $data) { //prints results from a select statement
+// Same source as above, modified for generic table printing
+// Prints everything after table is selected
+function printResults($name, $cols, $data) {
+	$attributes = array();
+	while ($row = OCI_Fetch_Array($cols, OCI_NUM)) {
+		$attributes[] = $row[0];
+	}
+	printInsertFields($name, $attributes);
+	printUpdateFields($cols);
+	printDeleteFields($cols);
 	echo "<br>Got data from table " . $name . "<br>";
+	printTable($attributes, $data);
+}
+
+// Prints the table attributes and data		
+function printTable($attributes, $data) { 
 	echo "<div class="."pure-table pure-table-bordered pure-table-striped"."><table>";
 	// print the top row (attribute labels)
 	$label = "<tr>";
-	while ($row = OCI_Fetch_Array($cols, OCI_BOTH)) {
-		$label = $label . "<th>" . $row[0] . "</th>";		
+	foreach ($attributes as $value) {
+		$label = $label . "<th>" . $value . "</th>";		
 	}
 	echo $label . "</tr>";
 	// print the data rows (tuples)
-	while ($tuple = OCI_Fetch_Array($data, OCI_BOTH)) {	
+	while ($tuple = OCI_Fetch_Array($data, OCI_NUM)) {
 		$output = "<tr>";
-				for ($it = 0; $it < count($tuple); $it = $it + 1) {
-					$output = $output . "<td>" . $tuple[$it] . "</td>";
-				}
-				echo $output . "</tr>";
+		foreach($tuple as $value) {
+			$output = $output . "<td>" . $value . "</td>";
+		}
+		echo $output . "</tr>";
 	}		
 	echo "</table></div>";
 }
 
+// Prints the form to insert new tuple into chosen table
+function printInsertFields($table, $attributes) {
+	$form = "<form method='POST' action='admin.php'><table>";
+	for ($it=0; $it < count($attributes); $it++) {
+		$form = $form . "<tr><td>" . $attributes[$it] . ":</td><td><input type='text' name = '$it'></td></tr>";		
+	} 
+	echo $form . "<tr><td><input type='hidden' value='$table' name='$it'></td></tr> 
+				  </table>
+				  <p><input type='submit' value='Insert' name='insertsubmit'></p>
+			      </form>";
+}
+
+// Prints the form to update table data
+function printUpdateFields($cols) {}
+// Prints the form to delete table data
+function printDeleteFields($cols) {}
+
 // Only starts retrieving above forms when connection to Oracle is established
 if ($db_conn) {
-	// Get the drop down list selection
+	// Get the drop down table selection and call function to deal with selected table
  	if (array_key_exists('tabselect', $_POST)) {
 		$table = $_POST['tabchoice'];
+		// save selection for future load
+		setcookie("tabchoice",$table);
 		$cols = executePlainSQL("select column_name from user_tab_columns where table_name = '$table'");
 		$data = executePlainSQL("select * from " . $table);
-		printResult($table, $cols, $data);
-	}	
+		printResults($table, $cols, $data);
+	}
+	// Handle tuple insert form submission
+	if (array_key_exists('insertsubmit', $_POST)) {
+		$tuple = "";
+		if(count($_POST) > 1) $tuple = "'$_POST[0]'";
+		$it = 1;	
+		while ($it < count($_POST)-2) {
+			$tuple = "$tuple,'$_POST[$it]'";
+			$it = $it + 1;
+		}
+		executePlainSQL("insert into $_POST[$it] values ($tuple)");
+		OCICommit($db_conn);
+	}
 	
-	// This code is also from the tutorial page, not sure what it's for
-	/*
 	if ($_POST && $success) {
-					//POST-REDIRECT-GET -- See http://en.wikipedia.org/wiki/Post/Redirect/Get
-					header("location: admin.php");
-				}
-		OCILogoff($db_conn);*/
+		//POST-REDIRECT-GET -- See http://en.wikipedia.org/wiki/Post/Redirect/Get
+		header("location: admin.php");
+	// default will check if there is any table already selected and output that	
+	} else if (strcmp($_COOKIE['tabchoice'], "") !== 0){
+		$tabchoice = $_COOKIE['tabchoice'];
+		$cols = executePlainSQL("select column_name from user_tab_columns where table_name = '$tabchoice'");
+		$data = executePlainSQL("select * from " . $tabchoice);
+		printResults($tabchoice, $cols, $data);
+	}
+	OCILogoff($db_conn);
 	
 }
 ?>
