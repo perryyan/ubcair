@@ -25,6 +25,9 @@
 </head>
 
 <body>
+<form method ="POST" action="admin.php">
+<button class="pure-button" name="Admin">Admin</button>
+</form>
 <form method="POST" action="oracle-test.php">
 <button class="pure-button" name="reset">Reset</button>
 </form>
