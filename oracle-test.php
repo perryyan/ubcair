@@ -14,39 +14,66 @@
   Apache server can run it, and you must rename it to have a ".php"
   extension.  You must also change the username and password on the 
   OCILogon below to be your ORACLE username and password -->
-<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="UBC Airline Booking Service">
+	<title>UBCAir</title>
+	<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+</head>
 
-<p>Access Admin functionality</p>
-<form method ="POST" action="admin.php">
-	<p><input type="submit" value="Admin" name="admin"</p>
-</form>
-
-<p>If you wish to reset the table press on the reset button. If this is the first time you're running this page, you MUST use reset</p>
+<body>
 <form method="POST" action="oracle-test.php">
-   
-<p><input type="submit" value="Reset" name="reset"></p>
+<button class="pure-button" name="reset">Reset</button>
 </form>
-
-<p>Insert values into tab1 below:</p>
-<form method="POST" action="oracle-test.php">
 <!--refresh page when submit-->
 
-<!--<p>cid<input type="text" name="cid" size="6"> -->
-<br>email<input type="text" name="email" size="18">
-<br>password<input type="text" name="password" size="18">
-<br>cname<input type="text" name="cname" size="18">  
-<br>passport_country<input type="text" name="passport_country" size="4">
-<br>passport_number<input type="text" name="passport_num" size="18">
-<br>phone#<input type="text" name="phone#" size="18">
-<br>address<input type="text" name="address" size="18">
-<!--define two variables to pass the value-->
-      
-<input type="submit" value="insert" name="insertsubmit"></p>
+<form class="pure-form pure-form-aligned" form method="POST" action="oracle-test.php">
+    <fieldset>
+            <div class="pure-control-group">
+                <label for="cname">Your Name</label>
+                <input id="cname" name="cname" type="text" required>
+            </div>
+
+            <div class="pure-control-group">
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" required>
+            </div>
+
+            <div class="pure-control-group">
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" required>
+            </div>
+
+            <div class="pure-control-group">
+                <label for="passport_country">Passport Country</label>
+                <input id="passport_country" name="passport_country" type="text" required>
+            </div>
+            
+            <div class="pure-control-group">
+                <label for="passport_num">Passport Number</label>
+                <input id="passport_num" name="passport_num" type="text" required>
+            </div>
+            
+            <div class="pure-control-group">
+                <label for="phone#">Phone Number</label>
+                <input id="phone#" name="phone#" type="text" required>
+            </div>       
+               
+            <div class="pure-control-group">
+                <label for="address">Address</label>
+                <input id="address" name="address" type="text" required>
+            </div>     
+        </div>
+    </fieldset>
+	<button type="submit" class="pure-button pure-button-primary" name="insertsubmit">Submit</button>
 </form>
-<!-- create a form to pass the values. See below for how to 
-get the values--> 
 
 
+</body>
+</html>
 
 <?php
 
@@ -132,7 +159,7 @@ function printResult($result) { //prints results from a select statement
 		 ."<th>address</th></tr>";
 
 	while ($row = OCI_Fetch_Array($result, OCI_BOTH)) {
-		echo "<tr><td>" . $row["CID"] . "</td><td>" 
+	/*	echo "<tr><td>" . $row["CID"] . "</td><td>" 
 						. $row["EMAIL"] . "</td><td>"
 						. $row["PASSWORD"] . "</td><td>"
 						. $row["CNAME"] . "</td><td>"
@@ -140,8 +167,8 @@ function printResult($result) { //prints results from a select statement
 						. $row["PASSPORT_NUM"] . "</td><td>"
 						. $row["PHONE#"] . "</td><td>"
 						. $row["ADDRESS"] . "</td></tr>"; //or just use "echo $row[0]" 
-	
-	/*		echo "<tr><td>" . $row[0] . "</td><td>" 
+	*/
+			echo "<tr><td>" . $row[0] . "</td><td>" 
 						. $row[1] . "</td><td>"
 						. $row[2] . "</td><td>"
 						. $row[3] . "</td><td>"
@@ -149,7 +176,7 @@ function printResult($result) { //prints results from a select statement
 						. $row[5] . "</td><td>"
 						. $row[6] . "</td><td>"
 						. $row[7] . "</td></tr>"; //or just use "echo $row[0]" 
-	*/
+	
 	}
 	echo "</table></div>";
 
