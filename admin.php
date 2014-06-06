@@ -3,8 +3,8 @@
 <!-- Drop down menu for selecting specific table -->
 <p>Select working data table</p>
 <form method="POST" action="admin.php">
-	<select name="tabchoice">
-		<option value = ""></option>
+	<select id="tabchoice" name="tabchoice">
+		<option selected value = "default">(Choose a data table)</option>
 		<option value = "CUSTOMER">Customers</option>
 		<option value = "AIRPORT">Airports</option>
 		<option value = "PLANE_IN">Airplanes</option>
@@ -18,7 +18,6 @@
 	</select>
 	<input type="submit" value="Submit" name="tabselect"></p>
 </form>
-<p>*These maybe hidden from staff view?</p>
 
 <?php
 
@@ -30,7 +29,7 @@ $db_conn = OCILogon("ora_b4s8", "a16894123", "ug");
 // ExecutePlainSQL, executeBoundSQL are from a sample file in the CS304 Tutorial page, 
 // http://www.ugrad.cs.ubc.ca/~cs304/2014S1/index.html,
 // Author: Jiemin Zhang,
-// Modified by Simona Radu
+// Modified by Simona Radu, Tam Ho
 function executePlainSQL($cmdstr) { //takes a plain (no bound variables) SQL command and executes it
 	//echo "<br>running ".$cmdstr."<br>";
 	global $db_conn, $success;
@@ -51,7 +50,6 @@ function executePlainSQL($cmdstr) { //takes a plain (no bound variables) SQL com
 		echo htmlentities($e['message']);
 		$success = False;
 	} else {
-
 	}
 	return $statement;
 
@@ -148,12 +146,11 @@ function printDeleteFields($cols) {}
 if ($db_conn) {
 	// Get the drop down table selection and call function to deal with selected table
  	if (array_key_exists('tabselect', $_POST)) {
+ 		//print("HI\n");
 		$table = $_POST['tabchoice'];
 		// save selection for future load
 		setcookie("tabchoice",$table);
-		$cols = executePlainSQL("select column_name from user_tab_columns where table_name = '$table'");
-		$data = executePlainSQL("select * from " . $table);
-		printResults($table, $cols, $data);
+		$success = True;
 	}
 	// Handle tuple insert form submission
 	if (array_key_exists('insertsubmit', $_POST)) {
@@ -172,12 +169,14 @@ if ($db_conn) {
 		//POST-REDIRECT-GET -- See http://en.wikipedia.org/wiki/Post/Redirect/Get
 		header("location: admin.php");
 	// default will check if there is any table already selected and output that	
-	} else if (strcmp($_COOKIE['tabchoice'], "") !== 0){
+	} else 
+		if ((strcmp($_COOKIE['tabchoice'], "") !== 0) && (strcmp($_COOKIE['tabchoice'], "default") !== 0)) {
 		$tabchoice = $_COOKIE['tabchoice'];
+		echo "<script>document.getElementById('tabchoice').value='$tabchoice'</script>";
 		$cols = executePlainSQL("select column_name from user_tab_columns where table_name = '$tabchoice'");
 		$data = executePlainSQL("select * from " . $tabchoice);
 		printResults($tabchoice, $cols, $data);
-	}
+		}
 	OCILogoff($db_conn);
 	
 }
