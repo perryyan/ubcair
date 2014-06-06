@@ -27,7 +27,8 @@
 <body>
 <form method ="POST" action="admin.php">
 <button class="pure-button" name="Admin">Admin</button>
-</form>
+</form>	
+
 <form method="POST" action="oracle-test.php">
 <button class="pure-button" name="reset">Reset</button>
 </form>
@@ -37,37 +38,37 @@
     <fieldset>
             <div class="pure-control-group">
                 <label for="cname">Your Name</label>
-                <input id="cname" name="cname" type="text" required>
+                <input id="cname" name="cname" type="text" maxlength="20" required>
             </div>
 
             <div class="pure-control-group">
                 <label for="email">Email</label>
-                <input id="email" name="email" type="email" required>
+                <input id="email" name="email" type="email" maxlength="30" required>
             </div>
 
             <div class="pure-control-group">
                 <label for="password">Password</label>
-                <input id="password" name="password" type="password" required>
+                <input id="password" name="password" type="password" maxlength="16" required>
             </div>
 
             <div class="pure-control-group">
                 <label for="passport_country">Passport Country</label>
-                <input id="passport_country" name="passport_country" type="text" required>
+                <input id="passport_country" name="passport_country" type="text" maxlength="3" required>
             </div>
             
             <div class="pure-control-group">
                 <label for="passport_num">Passport Number</label>
-                <input id="passport_num" name="passport_num" type="text" required>
+                <input id="passport_num" name="passport_num" type="text"  maxlength="7"required>
             </div>
             
             <div class="pure-control-group">
                 <label for="phone#">Phone Number</label>
-                <input id="phone#" name="phone#" type="text" required>
+                <input id="phone#" name="phone#" type="text" maxlength="20" required>
             </div>       
                
             <div class="pure-control-group">
                 <label for="address">Address</label>
-                <input id="address" name="address" type="text" required>
+                <input id="address" name="address" type="text" maxlength="150" required>
             </div>     
         </div>
     </fieldset>
@@ -215,9 +216,9 @@ if ($db_conn) {
 			
 		// Create sequence
 		executePlainSQL("create sequence cid_sequence 
-						start with 1 
+						start with 0 
 						increment by 1 
-						minvalue 1
+						minvalue 0
 						maxvalue 100000");
 
 						
