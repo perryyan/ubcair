@@ -3,7 +3,7 @@
 <!-- Drop down menu for selecting specific table -->
 <p>Select working data table</p>
 <form method="POST" action="admin.php">
-	<select id="tabchoice" name="tabchoice">
+	<select id="tabchoice" name="tabchoice" onchange="this.form.submit()">
 		<option selected value = "default">(Choose a data table)</option>
 		<option value = "CUSTOMER">Customers</option>
 		<option value = "AIRPORT">Airports</option>
@@ -16,7 +16,7 @@
 		<option value = "DETER_PAY">Reserv-Payments*</option>
 		<option value = "PAYMENT">Payments</option>		
 	</select>
-	<input type="submit" value="Submit" name="tabselect"></p>
+	<noscript><input type="submit" value="Submit"></noscript></p>
 </form>
 
 <?php
@@ -98,10 +98,13 @@ function printResults($name, $cols, $data) {
 	while ($row = OCI_Fetch_Array($cols, OCI_NUM)) {
 		$attributes[] = $row[0];
 	}
+	echo "<br>INSERT NEW<br>(enter value for each attribute)";
 	printInsertFields($name, $attributes);
-	printUpdateFields($cols);
-	printDeleteFields($cols);
-	echo "<br>Got data from table " . $name . "<br>";
+	echo "<br>UPDATE<br>(search for the row to change, then choose attribute to change and enter new value)<br>";
+	printUpdateFields($name, $attributes);
+	echo "<br>DELETE<br>(search for the row to delete)<br>";
+	printDeleteFields($name, $attributes);
+	echo "<br>DATA FROM TABLE " . $name . "<br>";
 	printTable($attributes, $data);
 }
 
@@ -131,26 +134,57 @@ function printInsertFields($table, $attributes) {
 	for ($it=0; $it < count($attributes); $it++) {
 		$form = $form . "<tr><td>" . $attributes[$it] . ":</td><td><input type='text' name = '$it'></td></tr>";		
 	} 
-	echo $form . "<tr><td><input type='hidden' value='$table' name='$it'></td></tr> 
-				  </table>
+	echo $form . "</table>
+				  <p><input type='hidden' value='$table' name='$it'></p>
 				  <p><input type='submit' value='Insert' name='insertsubmit'></p>
 			      </form>";
 }
 
 // Prints the form to update table data
-function printUpdateFields($cols) {}
+function printUpdateFields($table, $attributes) {
+	$form = "<form method='POST' action='admin.php'><table>" 
+	. "<tr><td>Search row by: </td><td><select id='updatesearchby' name='updatesearchby'>"
+	. "<option selected value='default'>(Select Column)</option>";
+	for ($it=0; $it < count($attributes); $it++) {
+		$form = $form . "<option value ='$attributes[$it]'>$attributes[$it]</option>";		
+	} 
+	$form = $form . "</select></td>"
+		. "<td><input type='text' name='searchedvalue' placeholder='Value to search'></td>"
+		. "</tr>"
+		. "<tr><td>Attribute to update: </td><td><select id='field2change' name='field2change'>"
+		. "<option selected value='default'>(Select Column)</option>";
+	for ($it=0; $it < count($attributes); $it++) {
+		$form = $form . "<option value ='$attributes[$it]'>$attributes[$it]</option>";		
+	}
+	$form = $form . "</select></td>"
+		. "<td><input type='text' name='newvalue' placeholder='Enter new value'></td>"
+		. "</tr></table>"
+		. "<p><input type='hidden' value='$table' name='tablename'></p>"
+		. "<p><input type='submit' value='Update' name='updatesubmit'></p></form>";	
+	echo $form;
+}
 // Prints the form to delete table data
-function printDeleteFields($cols) {}
+function printDeleteFields($table, $attributes) {
+	$form = "<form method='POST' action='admin.php'><table>" 
+	. "<tr><td>Search row by: </td><td><select id='deletesearchby' name='deletesearchby'>"
+	. "<option selected value='default'>(Select Column)</option>";
+	for ($it=0; $it < count($attributes); $it++) {
+		$form = $form . "<option value ='$attributes[$it]'>$attributes[$it]</option>";		
+	} 
+	$form = $form . "</select></td>"
+		. "<td><input type='text' name='searchedvalue' placeholder='Value to search'></td>"
+		. "</tr></table>"
+		. "<p><input type='hidden' value='$table' name='tablename'></p>"
+		. "<p><input type='submit' value='Delete' name='deletesubmit'></p></form>";	
+	echo $form;
+}
 
 // Only starts retrieving above forms when connection to Oracle is established
 if ($db_conn) {
 	// Get the drop down table selection and call function to deal with selected table
- 	if (array_key_exists('tabselect', $_POST)) {
- 		//print("HI\n");
-		$table = $_POST['tabchoice'];
+ 	if (array_key_exists('tabchoice', $_POST)) {
 		// save selection for future load
-		setcookie("tabchoice",$table);
-		$success = True;
+		setcookie("tabchoice",$_POST['tabchoice']);
 	}
 	// Handle tuple insert form submission
 	if (array_key_exists('insertsubmit', $_POST)) {
@@ -164,19 +198,58 @@ if ($db_conn) {
 		executePlainSQL("insert into $_POST[$it] values ($tuple)");
 		OCICommit($db_conn);
 	}
-	
+	// Handle tuple update form submission
+	if (array_key_exists('updatesubmit', $_POST)) {
+		$tablename = $_POST['tablename'];
+		$field2change = $_POST['field2change']; 
+		$newvalue = $_POST['newvalue'];
+		$updatesearchby = $_POST['updatesearchby'];
+		$searchedvalue = $_POST['searchedvalue'];
+		executePlainSQL("update $tablename" 
+				. " set $field2change ='$newvalue'" 
+				. " where $updatesearchby = '$searchedvalue'");
+		OCICommit($db_conn);
+		
+		// save selection for next load
+		setcookie("updatesearchby",$updatesearchby);
+	}
+	// Handle delete from submission
+	if (array_key_exists('deletesubmit', $_POST)) {
+		$tablename = $_POST['tablename']; 
+		$deletesearchby = $_POST['deletesearchby'];
+		$searchedvalue = $_POST['searchedvalue'];
+		executePlainSQL("delete from $tablename"  
+				. " where $deletesearchby = '$searchedvalue'");
+		OCICommit($db_conn);
+		
+		// save selection for next load
+		setcookie("deletesearchby",$deletesearchby);
+	}
 	if ($_POST && $success) {
 		//POST-REDIRECT-GET -- See http://en.wikipedia.org/wiki/Post/Redirect/Get
 		header("location: admin.php");
 	// default will check if there is any table already selected and output that	
-	} else 
-		if ((strcmp($_COOKIE['tabchoice'], "") !== 0) && (strcmp($_COOKIE['tabchoice'], "default") !== 0)) {
-		$tabchoice = $_COOKIE['tabchoice'];
-		echo "<script>document.getElementById('tabchoice').value='$tabchoice'</script>";
+	} else if ((strcmp($_COOKIE['tabchoice'], "") !== 0) && (strcmp($_COOKIE['tabchoice'], "default") !== 0)) {
+		$tabchoice = $_COOKIE['tabchoice'];		
 		$cols = executePlainSQL("select column_name from user_tab_columns where table_name = '$tabchoice'");
 		$data = executePlainSQL("select * from " . $tabchoice);
 		printResults($tabchoice, $cols, $data);
+		
+		// retrieve past delete/update selection from cookie for this load
+		$updatesearchby = $_COOKIE['updatesearchby'];
+		$deletesearchby = $_COOKIE['deletesearchby'];
+		// delete them as only needed for one load
+		setcookie("updatesearchby", "", time()-3600);
+		setcookie("deletesearchby", "", time()-3600);
+		// set the drop down lists according to the cookie (last delete/update selections)
+		echo "<script>document.getElementById('tabchoice').value='$tabchoice'</script>";
+		if (strcmp($_COOKIE['updatesearchby'], "") !== 0) {
+		echo "<script>document.getElementById('updatesearchby').value='$updatesearchby'</script>";
 		}
+		if (strcmp($_COOKIE['deletesearchby'], "") !== 0) {
+		echo "<script>document.getElementById('deletesearchby').value='$deletesearchby'</script>";
+		}
+	}
 	OCILogoff($db_conn);
 	
 }
