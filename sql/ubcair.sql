@@ -11,7 +11,7 @@
 -- Set the datetime datatype
 -- format: 2014-09-01 15:05
 ALTER SESSION SET NLS_DATE_FORMAT='YYYY-MM-DD HH24:MI';
-set pagesize 100
+set pagesize 1000
 set linesize 1000000
 set space 3
 
@@ -57,8 +57,8 @@ create table Customer(
 create table Airport(
 	code varchar2(4) PRIMARY KEY,
 	apname varchar2(50),
-	city varchar2(20),
-	country varchar2(20)
+	city varchar2(15),
+	country varchar2(4)
 	);
 
 --requires max_seat
@@ -219,12 +219,8 @@ drop view Flight_time cascade constraints;
 drop view trans1 cascade constraints;
 drop view trans2 cascade constraints;
 drop view trans3 cascade constraints;
+drop view allFlight cascade constraints;
 
-
-CREATE VIEW Flight_time(fid, fTime, departAP, departCo, arrivalAP, arrivalCo) AS
-	select f.fid, f.arrivalTime-f.departTime, f.departAP, a1.country, f.arrivalAP, a2.country
-	from Flight f, airport a1, airport a2
-	where f.departAP = a1.code AND f.arrivalAP = a2.code;
 
 CREATE VIEW trans1(fid, dt1, depart, arrival, totalTime, totalprice) AS
 	select f1.fid, f1.departTime, f1.departAP, f1.arrivalAP, (f1.arrivalTime-f1.departTime) AS totalTime, f1.cost
@@ -232,10 +228,10 @@ CREATE VIEW trans1(fid, dt1, depart, arrival, totalTime, totalprice) AS
 column dt1 format a9
 column totalTime format a9
 
-CREATE VIEW trans2(fisrtid, secondid, dt1, depart, dt2, midd, arrival, totalTime, totalprice) AS
+CREATE VIEW trans2(firstid, secondid, dt1, depart, dt2, midd, arrival, totalTime, totalprice) AS
 	select f1.fid, f2.fid, f1.departTime, f1.departAP, f2.departTime, f2.departAP, f2.arrivalAP, (f1.arrivalTime-f1.departTime)+(f2.arrivalTime-f2.departTime) AS totalTime, f1.cost+f2.cost AS totalprice
 	from Flight f1, Flight f2
-	where f1.arrivalAP = f2.departAP AND f2.departTime > f1.arrivalTime AND f1.departAP <> f2.arrivalAP AND (f2.arrivalTime-f1.departTime) < '+000000000 23:59:59.000000000';
+	where f1.arrivalAP = f2.departAP AND f2.departTime > f1.arrivalTime AND f1.departAP <> f2.arrivalAP AND (f2.arrivalTime-f1.departTime) < '+000000001 23:59:59.000000000';
 column dt1 format a9
 column dt2 format a9
 column totalTime format a9	
@@ -253,8 +249,17 @@ CREATE VIEW allFlight(firstid, secondid, thirdid, dt1, depart, dt2, mid1, dt3, m
 	select t1.fid, NULL AS secondid, NULL AS thirdid, t1.dt1, t1.depart, NULL AS dt2, NULL AS mid1, NULL AS dt3, NULL AS mid2, t1.arrival, t1.totalTime, t1.totalprice
 	from trans1 t1
 UNION
-	select t2.firstid, t2.secondid, NULL AS thirdid, t2.dt1, t2.depart, t2.dt2, NULL AS mid1, NULL AS dt3, NULL AS mid2, t1.arrival, t1.totalTime, t1.totalprice 
+	select t2.firstid, t2.secondid, NULL AS thirdid, t2.dt1, t2.depart, t2.dt2, t2.midd, NULL AS dt3, NULL AS mid2, t2.arrival, t2.totalTime, t2.totalprice 
 	from trans2 t2
 UNION
-select * from trans3
+	select t3.firstid, t3.secondid, t3.thirdid, t3.dt1, t3.depart, t3.dt2, t3.mid1, t3.dt3, t3.mid2, t3.arrival, t3.totalTime, t3.totalprice 
+	from trans3 t3
 ;
+
+CREATE VIEW Flight_time(fTime, depart, departCity, departCo, arrival, arrivalCity, arrivalCo) AS
+	select f.totaltime, f.depart, a1.city, a1.country, f.arrival, a2.city, a2.country
+	from allFlight f, airport a1, airport a2
+	where f.depart = a1.code AND f.arrival = a2.code;
+column fTime format a9	
+	
+	
