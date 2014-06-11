@@ -24,8 +24,6 @@ drop table Customer cascade constraints;
 drop table Airport cascade constraints;
 -- Plane = Plane_in
 drop table Plane cascade constraints;
--- combine the usedin_F with Flight
--- drop table usedin_F;
 drop table Flight cascade constraints;
 
 drop table make_res cascade constraints;
@@ -69,15 +67,6 @@ create table Plane(
 	currAP varchar2(4) NOT NULL,
 	FOREIGN KEY (currAP) references Airport(code)
 	);
-	
---create table usedin_F(
---	fid varchar2(10) UNIQUE,
---	pid varchar2(10) PRIMARY KEY,
---	plane_model varchar2(20),
---	airline char(20),
---	FOREIGN KEY (pid, plane_model, airline) references Plane_in(pid, plane_model, aireline),
---	FOREIGN KEY (fid) references Flight(fid)
---	);
 	
 create table Flight(
 	fid varchar2(10) PRIMARY KEY,
