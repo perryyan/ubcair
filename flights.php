@@ -1,149 +1,121 @@
-<p>Search for your perfect flight<br></p>
-<p><a href="http://www.textfixer.com/resources/dropdowns/country-list-iso-codes.txt" target="_blank">Country Codes</a><br></p>
-<!--Drop down list frames, contents will be dynamically created-->
-<form method="POST" action="flights.php"><table>
-<tr>
-<td>Departure location:</td>
-<td><select id="depcountry" name="depcountry" onchange="this.form.submit()">
-		<option selected value = "default">(Choose country)</option>		
-	</select>
-	<noscript><input type="submit" value="Submit"></noscript>
-</td>
-<td><select id="depcity" name="depcity">
-	<option selected value = "default">(Choose city)</option>	
-	</select>
-</td>
-</tr>
-<tr>
-<td>Arrival location:</td>
-<td><select id="descountry" name="descountry" onchange="this.form.submit()">
-		<option selected value = "default">(Choose country)</option>	
-	</select>
-	<noscript><input type="submit" value="Submit"></noscript>
-</td>
-<td><select id="descity" name="descity">
-		<option selected value = "default">(Choose city)</option>	
-	</select>
-</td>
-</tr>
-<tr><input type="submit" value="Submit" name="searchsubmit"></tr>
-</table>
+<head>
+<script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+<link rel="stylesheet" href="css/mainpage.css">
+<title>UBC Air - Find flights</title>
+</head>
+
+<body>
+	<div class="header">
+    <div class="home-menu pure-menu pure-menu-open pure-menu-horizontal pure-menu-fixed">
+        <a class="pure-menu-heading" href="">UBC Air</a>
+        <ul>
+            <li><a href="index.php">Home</a></li>
+            <li><a href="login.php">Login</a></li>
+            <li><a href="register.php">Sign Up</a></li> 
+            <li><a href="flights.php">Find flights</a></li>   
+        </ul>
+    </div>
+	<script>
+	$(document).ready(function(){
+    	$(".toggler").click(function(e){
+        	e.preventDefault();
+       		$('.detail'+$(this).attr('detail-num')).toggle();
+    	});
+	});
+	</script>
+	
+<form class="pure-form" method ="POST" action="payment.php">
+<fieldset>
+    <table class="pure-table pure-table-bordered">
+    <tr>
+        <td>Departing from</td>
+        <td>Departure time</td>
+        <td>Arriving at</td>
+        <td>Arrival time</td>
+        <td>Duration</td>
+        <td>Price</td>
+        <td>Select this flight</td>
+    </tr>
+    <tr>
+        <td>
+            YVR
+            <br>Vancouver International Airport
+        </td>
+        <td>8:00PM</td>
+        <td>
+            HKG
+            <br>Hong Kong International Airport    
+        </td>
+        <td>12:00PM</td>
+        <td>20 hours</td>
+        <td>$1300</td>
+        <td>
+            <label for="flight1" class="pure-radio">
+                <input id="flight1" type="radio" name="optionsRadios" value="option1">
+            </label>
+        </td>
+    </tr>
+    </table>
+    <a href="#" class="toggler" detail-num="1">Details</a>
+    
+<a class="detail1" style="display:none">
+    <br>
+    <br>Depart from YVR (Vancouver International Airport) at 8:00 PM
+    <br>Arrive at SEA (Seattle International Airport) at 9:45 PM
+    <br>Layover for 1 hour
+    <br>Depart from SEA (Seattle International Airport) at 10:45 PM
+    <br>Arrive at HKG (Hong Kong International Airport) at 12:00 PM
+        </a>
+
+<table class="pure-table pure-table-bordered">
+    <tr>
+        <td>Departing from</td>
+        <td>Departure time</td>
+        <td>Arriving at</td>
+        <td>Arrival time</td>
+        <td>Duration</td>
+        <td>Price</td>
+        <td>Select this flight</td>
+    </tr>
+    <tr>
+        <td>
+            YVR
+            <br>Vancouver International Airport    
+        </td>
+        <td>5:00PM</td>
+        <td>
+            HKG
+            <br>Hong Kong International Airport    
+        </td>
+        <td>4:24PM</td>
+        <td>14 hours</td>
+        <td>$1450</td>
+        <td>
+            <label for="flight2" class="pure-radio">
+                <input id="flight2" type="radio"        name="optionsRadios" value="option2"></label>
+        </td>
+    </tr>
+    </table>
+      
+    <a href="#" class="toggler" detail-num="2">Details</a>
+	    
+	<a class="detail2" style="display:none">
+	    <br>
+	    <br>Depart from YVR (Vancouver International Airport) at 5:00 PM
+	    <br>Arrive at ICH (Incheon International Airport) at 1:45 PM
+	    <br>Layover for 1 hour
+	    <br>Depart from ICH (Incheon International Airport) at 2:45 PM
+	    <br>Arrive at HKG (Hong Kong International Airport) at 4:24 PM
+	</a>
+	<br>
+	<button type="submit" class="pure-button pure-button-primary">Book my flight</button>
+</fieldset>
 </form>
+</body>  
 
 <?php
-	
-// These stuff are needed (for now) to connect Oracle, will figure out how to import from
-// main php file
-$success = True; //keep track of errors so it redirects the page only if there are no errors
-$db_conn = OCILogon("ora_b4s8", "a16894123", "ug");
-	
-include "oci_functions.php";
 
-function printoptions($options, $dropdownid) {
-	$it = 1;
-	while ($option = OCI_Fetch_Array($options, OCI_NUM)) {
-		echo "<script>var c = document.createElement('option');";
-		echo "c.value = '$option[0]';";
-		echo "c.text = '$option[0]';";
-		echo "document.getElementById('$dropdownid').options.add(c, $it)</script>";
-		$it++;
-	}
-}
+include('oci_functions.php');
 
-// Prints the table attributes and data		
-function printFlights($flights) {
-	echo "<p><br>Search Results: <br></p>"; 
-	echo "<div class="."pure-table pure-table-bordered pure-table-striped"."><table border='1'>";
-	// print the top row (attribute labels)
-	echo "<tr><th>ID</th><th>Departure Airport</th><th>City</th><th>Country</th>"
-			."<th>Arrival Airport</th><th>City</th><th>Country</th><th>Departure Time</th>"
-	    	."<th>Arrival Time</th><th>COST</th></tr>";
-	// print the data rows (tuples)
-	while ($tuple = OCI_Fetch_Array($flights, OCI_ASSOC)) {
-		$output = "<tr>";
-		foreach($tuple as $value) {
-			$output = $output . "<td>" . $value . "</td>";
-		}
-		echo $output . "</tr>";
-	}		
-	echo "</table></div>";
-}
-
-if ($db_conn) {
-	// Get the drop down table selection and call function to deal with selected table	
-	//if (array_key_exists('searchsubmit', $_POST)) {
-	//	setcookie('depcity',$_POST['depcity']);
-	//	setcookie('descity',$_POST['descity']);
-	//}
- 	if (array_key_exists('depcountry', $_POST) && (strcmp($_POST['depcountry'],"default") !== 0)) {
-		setcookie('depcountry',$_POST['depcountry']);
-	}
-	if (array_key_exists('descountry', $_POST) && (strcmp($_POST['descountry'],"default") !== 0)) {
-		setcookie('descountry',$_POST['descountry']);
-	}
-	if (array_key_exists('depcity', $_POST) && (strcmp($_POST['depcity'],"default") !== 0)) {
-		setcookie('depcity',$_POST['depcity']);
-	}
-	if (array_key_exists('descity', $_POST) && (strcmp($_POST['descity'],"default") !== 0)) {
-		setcookie('descity',$_POST['descity']);
-	}
-
-	if ($_POST && $success) {
-		header("location: flights.php");
-	}
-	else {
-		$depcity; $descity;
-		$depcountries = executePlainSQL("select distinct A.country" 
-	 								   	." from Flight F, Airport A"
-	 									." where F.departap = A.code"
-										." order by country");
-		printoptions($depcountries, "depcountry");
-			
-		$descountries = executePlainSQL("select distinct A.country" 
-	 								   	." from Flight F, Airport A"
-	 									." where F.arrivalap = A.code"
-										." order by country");
-		printoptions($descountries, "descountry");
-				
-		if (array_key_exists('depcountry', $_COOKIE)) {
-			$depcountry = $_COOKIE['depcountry'];	
-			echo "<script>document.getElementById('depcountry').value='$depcountry'</script>";
-			$depcities = executePlainSQL("select distinct A.city" 
-	 								   	." from Flight F, Airport A"
-	 									." where F.departap = A.code"
-	 									." AND A.country='$depcountry'"
-										." order by city");
-			printoptions($depcities, "depcity");
-		}
-		if (array_key_exists('descountry', $_COOKIE)) {
-			$descountry = $_COOKIE['descountry'];
-			echo "<script>document.getElementById('descountry').value='$descountry'</script>";
-			$descities = executePlainSQL("select distinct A.city" 
-	 								   ." from Flight F, Airport A"
-	 								   ." where F.arrivalap = A.code AND A.country='$descountry'"
-									   ." order by city");
-			printoptions($descities, "descity");
-		}
-		if (array_key_exists('depcity', $_COOKIE)) {
-			$depcity = $_COOKIE['depcity'];
-			echo "<script>document.getElementById('depcity').value='$depcity'</script>";	
-		}
-		if (array_key_exists('descity', $_COOKIE)) {
-			$descity = $_COOKIE['descity'];
-			echo "<script>document.getElementById('descity').value='$descity'</script>";	
-		}
-		// magic happens here
-		if (strcmp($depcity,"") !== 0 && strcmp($descity,"") !== 0) {
-			executePlainSQL("drop View FlightSearchDisplay");
-			executePlainSQL("create View FlightSearchDisplay(fid,depapname,depcity,depcountry, desapname,descity,descountry,deptime,destime,cost) AS"
-						  ." select F.fid, A1.apname, A1.city, A1.country, A2.apname, A2.city, A2.country, F.departtime, F.arrivaltime, F.cost"
-						  ." from Flight F, Airport A1, Airport A2"
-						  ." where F.departap = A1.code AND F.arrivalap = A2.code"
-						  ." AND A1.city='$depcity' AND A1.country='$depcountry'"
-						  ." AND A2.city='$descity' AND A2.country='$descountry'");
-			$flights = executePlainSQL("select * from FlightSearchDisplay order by cost");
-			printFlights($flights);
-		}		
-	}
-}
 ?>
