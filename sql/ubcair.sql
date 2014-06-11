@@ -250,10 +250,11 @@ column dt3 format a9
 column totalTime format a9
 
 CREATE VIEW allFlight(firstid, secondid, thirdid, dt1, depart, dt2, mid1, dt3, mid2, arrival, totalTime, totalprice) AS
-select t1.fid, NULL AS secondid, NULL AS thirdid,  
-from trans1 t1
+	select t1.fid, NULL AS secondid, NULL AS thirdid, t1.dt1, t1.depart, NULL AS dt2, NULL AS mid1, NULL AS dt3, NULL AS mid2, t1.arrival, t1.totalTime, t1.totalprice
+	from trans1 t1
 UNION
-select * from trans2
+	select t2.firstid, t2.secondid, NULL AS thirdid, t2.dt1, t2.depart, t2.dt2, NULL AS mid1, NULL AS dt3, NULL AS mid2, t1.arrival, t1.totalTime, t1.totalprice 
+	from trans2 t2
 UNION
 select * from trans3
 ;
