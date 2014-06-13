@@ -48,7 +48,7 @@
         Welcome to UBC Air
     </h1>
 </div>
->>>>>>> 67d46c7d238529e16d4d7c41e1961d267a6cfa0a
+
 <?php
 
 // These stuff are needed (for now) to connect Oracle, will figure out how to import from
@@ -57,7 +57,6 @@ $success = True; //keep track of errors so it redirects the page only if there a
 	
 //include "flightdetails.php";
 include "oci_functions.php";
-include "regexhelper.php";
 
 if ($db_conn) {
  	if (array_key_exists('flightchoice', $_POST)) {
