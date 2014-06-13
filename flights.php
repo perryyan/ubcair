@@ -26,7 +26,11 @@
 	</select>
 </td>
 </tr>
-<tr><td>Earliest Date</td><td><input type="date" name="flightdate" id="flightdate" value="2000-01-01"</td></tr>
+
+<?php
+$earliestdate = date("Y-m-d");
+echo "<tr><td>Earliest Date</td><td><input type='date' name='flightdate' id='flightdate' value='".$earliestdate."'</td></tr>";
+?>
 <tr>
 <td>Number of transfers: </td>
 <td><input type="radio" checked name="maxnumtrans" value="1">0-1</td>
@@ -201,7 +205,7 @@ if ($db_conn) {
 // Reason why we need to reload the page after submit is because .... well it's in the sample...
 	else {
 		$depcity; $descity;
-		$flightdate = "2000-01-01";
+		$flightdate = date("Y-m-d");
 		$depcountries = executePlainSQL("select distinct A.country" 
 	 								   	." from Flight F, Airport A"
 	 									." where F.departap = A.code"
