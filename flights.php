@@ -26,7 +26,7 @@
 	</select>
 </td>
 </tr>
-<tr><td>Earliest Date</td><td><input type="date" name="flightdate" id="flightdate" value="2000-01-01"</td></tr>
+<tr><td>Earliest departure date: </td><td><input type="date" name="flightdate" id="flightdate" value="2000-01-01"</td></tr>
 <tr>
 <td>Number of transfers: </td>
 <td><input type="radio" checked name="maxnumtrans" value="1">0-1</td>
@@ -56,13 +56,6 @@ $db_conn = OCILogon("ora_b4s8", "a16894123", "ug");
 // Functions for interacting with Oracle DBMS	
 include "oci_functions.php";
 
-// Changing the format of Oracle's timestamp data for more friendly look,
-// mode 1 for timestamp, mode 2 for intervals (result of algebraic operations on timestamps)
-function parseDate($value, $mode) {
-	if ($mode == 1) return substr($value, 0, 17);
-	if ($mode == 2) return substr($value, 10, 9);	
-}
-
 // To populate the dropdown frames in the HTML part above with options
 function printoptions($options, $dropdownid) {
 	$it = 1;
@@ -73,59 +66,6 @@ function printoptions($options, $dropdownid) {
 		echo "document.getElementById('$dropdownid').options.add(c, $it)</script>";
 		$it++;
 	}
-}
-
-// Coordinate printing of detailed information regarding each flight on the search result when clicked
-function printDetails($route, $it) {
-	echo "<a href='#' class='toggler' detail-num='$it'>Details</a>"
-    	."<a class='detail$it' style='display:none'>";
-	if (array_key_exists('FIRSTID', $route)) {
-		$firstid = $route['FIRSTID'];
-		printDetailsHelper($firstid);
-	}
-	if (array_key_exists('SECONDID',$route)) {
-		$secondid = $route['SECONDID'];
-		printLayOver($firstid, $secondid);		
-		printDetailsHelper($secondid);
-	}	
-	if (array_key_exists('THIRDID', $route)) {
-		$thirdid = $route['THIRDID'];
-		printLayOver($secondid, $thirdid);
-		printDetailsHelper($route['THIRDID']);
-	}
-	echo "</a>";
-}
-
-// Actually printing detailed information regarding each flight in search result 
-function printDetailsHelper($flightid) {
-	$flight = oci_fetch_array(executePlainSQL("select departap,arrivalap,departtime,arrivaltime,cost,arrivaltime-departtime as ftime from Flight"
-										    ." where fid='$flightid'"),OCI_ASSOC);
-	$departapcode = $flight['DEPARTAP'];
-	$departap = oci_fetch_array(executePlainSQL("select * from Airport"
-											  ." where code='$departapcode'"));
-	$departapname = $departap['APNAME'];
-	$departapcity = $departap['CITY'];
-	$departapcountry = $departap['COUNTRY'];
-	$departtime = parseDate($flight['DEPARTTIME'], 1);
-	$arrivalapcode = $flight['ARRIVALAP'];
-	$arrivalap = oci_fetch_array(executePlainSQL("select * from Airport"
-											  	." where code='$arrivalapcode'"));
-	$arrivalapname = $arrivalap['APNAME'];
-	$arrivalapcity = $arrivalap['CITY'];
-	$arrivalapcountry = $arrivalap['COUNTRY'];
-	$arrivaltime = parseDate($flight['ARRIVALTIME'], 1);
-	$fduration = parseDate($flight['FTIME'],2);
-	echo "<br>Depart from $departapname ($departapcode at $departapcity, $departapcountry) on $departtime GMT"
-		."<br>Flight Duration: $fduration"
-    	."<br>Arrive at $arrivalapname ($arrivalapcode at $arrivalapcity, $arrivalapcountry) on $arrivaltime GMT";
-}
-
-// Another helper for printDetails, printing wait time between transfer
-function printLayOver($firstid, $secondid) {
-	$layover = oci_fetch_row(executePlainSQL("select F2.departtime-F1.arrivaltime from Flight F1, Flight F2
-									where F1.fid='$firstid' AND F2.fid='$secondid'"));
-	$layovertime = parseDate($layover[0],2);
-	echo "<br>Lay over for $layovertime";	
 }
 
 // Prints the flight search results as a table with show details button and button to select the flight
@@ -148,7 +88,7 @@ function printFlights($flights, $locations) {
 		$departtime = parseDate($flight['DT1'], 1);
 		$flighttime = parseDate($flight['TOTALTIME'],2);
 		$cost = $flight['TOTALPRICE'];
-		$flight_string = implode(" ",$flight);
+		$flight_string = serialize($flight);
 		echo $printout . "<td>$departtime</td><td>$flighttime</td><td>$cost</td>";
 		echo "<td><input type='radio' name='flightchoice' value='$flight_string' required></td></tr>";
 		echo "<tr><td>";
@@ -274,7 +214,6 @@ if ($db_conn) {
 											AND dt1>='$flightdate'
 					                        ORDER BY totalprice");
 			}
-			print_r($flightdate);
 			$locations = Array ($departap[0], $depcity, $depcountry, $arrivalap[0], $descity, $descountry);
 			printFlights($flights, $locations);
 		}		
