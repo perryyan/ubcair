@@ -45,6 +45,7 @@ drop table payment cascade constraints;
 create table Customer(
 	cid number(9,0) PRIMARY KEY,
 	email varchar2(30) UNIQUE,
+	password varchar(16),
 	cname varchar2(20),
 	passport_country varchar2(3),
 	passport_num number(7,0),
