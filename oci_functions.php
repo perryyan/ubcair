@@ -1,5 +1,7 @@
 <?php 
 
+$db_conn = OCILogon("ora_c2e8", "a42375105", "ug");
+
 // Changing the format of Oracle's timestamp data for more friendly look,
 // mode 1 for timestamp, mode 2 for intervals (result of algebraic operations on timestamps)
 function parseDate($value, $mode) {
