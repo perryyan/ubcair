@@ -224,6 +224,12 @@ function printFlights($flights, $locations) {
 		else if (strcmp($_COOKIE['flightclass'], "first") == 0 ) {
 			$cost *= 5;
 		}
+		// update the cost if the class is changed
+		$flight['TOTALPRICE'] = $cost;  
+		
+		// Add class and num tickets to the post array
+		$flight['CLASS'] = $_COOKIE['flightclass'];
+		$flight['NUMTICKETS'] = $_COOKIE['numtickets'];
 			
 		$flight_string = serialize($flight);
 		echo $printout . "<td>$departtime</td><td>$flighttime</td><td>$cost</td>";
