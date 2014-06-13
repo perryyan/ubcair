@@ -69,6 +69,7 @@
 </td>
 </tr>
 
+
 <?php
 $earliestdate = date("Y-m-d");
 echo "<tr><td>Earliest Date</td><td><input type='date' name='flightdate' id='flightdate' value='".$earliestdate."'</td></tr>";
@@ -78,6 +79,21 @@ echo "<tr><td>Earliest Date</td><td><input type='date' name='flightdate' id='fli
 <td><input type="radio" checked name="maxnumtrans" value="1">0-1</td>
 <td><input type="radio" name="maxnumtrans" id="maxnumtransinf" value="inf">2+</td>
 </tr>
+<tr>
+<td>Enter number of tickets: </td>
+<td><input type="number" name="numtickets" id="numtickets" min="1" value="1" style="width:60px" required></td>
+</tr>
+<tr>
+<td>Preferred class:</td>
+<td>
+<select name="flightclass" id="flightclass">
+	<option value="economy">Economy class</option>
+	<option value="business">Business class</option>
+	<option value="first">First class</option>
+</select>
+</td>
+</tr>
+
 <tr><td><input type="submit" value="Submit" name="searchsubmit"></td>
 	<td><input type="submit" value="Clear all" name="clearsubmit"></td>
 </table>
@@ -196,7 +212,20 @@ function printFlights($flights, $locations) {
 		$departtime = parseDate($flight['DT1'], 1);
 		$flighttime = parseDate($flight['TOTALTIME'],2);
 		$cost = $flight['TOTALPRICE'];
-		$flight_string = implode(" ",$flight);
+		
+		// Variable costs depends on class
+		if(strcmp($_COOKIE['flightclass'], "economy") == 0 ) {
+			$cost *= 1;
+		}
+		else if (strcmp($_COOKIE['flightclass'], "business") == 0) {
+			$cost *= 3;
+		}
+		
+		else if (strcmp($_COOKIE['flightclass'], "first") == 0 ) {
+			$cost *= 5;
+		}
+			
+		$flight_string = serialize($flight);
 		echo $printout . "<td>$departtime</td><td>$flighttime</td><td>$cost</td>";
 		echo "<td><input type='radio' name='flightchoice' value='$flight_string' required></td></tr>";
 		echo "<tr><td>";
@@ -229,6 +258,12 @@ if ($db_conn) {
 	if (array_key_exists('flightdate', $_POST)) {
 		setcookie('flightdate', $_POST['flightdate']);
 	}
+	if (array_key_exists('numtickets', $_POST)) {
+		setcookie('numtickets', $_POST['numtickets']);
+	}
+	if (array_key_exists('flightclass', $_POST)) {
+		setcookie('flightclass', $_POST['flightclass']);
+	}	
 	if (array_key_exists('clearsubmit', $_POST)) {
 		setcookie('depcountry',"",time() -3600);
 		setcookie('descountry',"",time() -3600);
@@ -236,7 +271,10 @@ if ($db_conn) {
 		setcookie('descity',"",time() -3600);
 		setcookie('maxnumtrans',"",time() -3600);
 		setcookie('flightdate', "",time() -3600);
+		setcookie('numtickets',"",time()-3600);
+		setcookie('flightclass',"",time()-3600);
 	}
+
 	
 	if ($_POST && $success) {
 		header("location: flights.php");
@@ -248,7 +286,10 @@ if ($db_conn) {
 // cookies. 
 // Reason why we need to reload the page after submit is because .... well it's in the sample...
 	else {
-		$depcity; $descity;
+		$depcity; 
+		$descity; 
+		$flightclass; 
+		$numtickets;
 		$flightdate = date("Y-m-d");
 		$depcountries = executePlainSQL("select distinct A.country" 
 	 								   	." from Flight F, Airport A"
@@ -293,6 +334,14 @@ if ($db_conn) {
 			$flightdate = $_COOKIE['flightdate'];
 			echo "<script>document.getElementById('flightdate').value='$flightdate'</script>";
 		}
+		if (array_key_exists('numtickets', $_COOKIE)) {
+			$numtickets = $_COOKIE['numtickets'];
+			echo "<script>document.getElementById('numtickets').value='$numtickets'</script>";
+		}
+		if (array_key_exists('flightclass', $_COOKIE)) {
+			$flightclass = $_COOKIE['flightclass'];
+			echo "<script>document.getElementById('flightclass').value='$flightclass'</script>";
+		}		
 // The above set the drop down lists according to the cookies, will not work if we don't reload
 // the page as done by header("location:flights.php")
 // The below do the magical/legendary/highly-inefficient search query to Oracle for retrieving flight
