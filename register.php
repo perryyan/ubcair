@@ -15,8 +15,16 @@
         <a class="pure-menu-heading" href="">UBC Air</a>
         <ul>
             <li><a href="index.php">Home</a></li>
-            <li><a href="login.php">Login</a></li>
-            <li><a href="register.php">Sign Up</a></li>  
+<?php
+
+	if(!array_key_exists('loggedin', $_COOKIE) ) {
+		echo "<li><a href='login.php'>Login</a></li>";
+		echo "<li><a href='register.php'>Sign Up</a></li>";
+	}
+	else {
+		echo "<li><a href='logut.php'>Logout</a></li>";
+	}   
+?>  
             <li><a href="flights.php">Find flights</a></li>                 
         </ul>
     </div>

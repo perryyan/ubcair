@@ -15,10 +15,20 @@
     <div class="home-menu pure-menu pure-menu-open pure-menu-horizontal pure-menu-fixed">
         <a class="pure-menu-heading" href="">UBC Air</a>
         <ul>
+        	
             <li><a href='index.php'>Home</a></li>
-			<li><a href='login.php'>Login</a></li>
-            <li><a href="register.php">Sign Up</a></li>    
-            <li><a href="flights.php">Find flights</a></li>           
+<?php
+
+	if(!array_key_exists('loggedin', $_COOKIE) ) {
+		echo "<li><a href='login.php'>Login</a></li>";
+		echo "<li><a href='register.php'>Sign Up</a></li>";
+	}
+	else {
+		echo "<li><a href='logout.php'>Logout</a></li>";
+		echo "<li><a href='support.php'>My Orders</a></li>";		
+	}   
+?>  
+            <li><a href="flights.php">Find flights</a></li>      
         </ul>
     </div>
 </div>
@@ -36,10 +46,9 @@ session_start();
 include('oci_functions.php');
 
 // connect to database
-$db_conn = OCILogon("ora_c2e8", "a42375105", "ug");
 if($db_conn) {
 	
-	if(!empty($_POST['email']) && !empty($_POST['password']) ) {
+	if(!empty($_POST['email']) && !empty($_POST['password']) && !(array_key_exists('login', $_COOKIE)) ) {
 	    $email = $_POST['email'];
 		$password = $_POST['password'];
 	
@@ -54,15 +63,14 @@ if($db_conn) {
 			$r = oci_execute($stmt, OCI_DEFAULT);
 						
 			$row = oci_fetch_array($stmt, OCI_BOTH);
-			// Store session variables
-			$_POST['email'] = $email;
-			$_POST['cname'] = $row['CNAME'];
-			$_POST['cid'] = $row['CID'];
-			$_POST['loggedin'] = 1;
+			
+			
+			setcookie('loggedin',1);
+			setcookie('cid', $row['CID']);
+			setcookie('cname', $row['CNAME']);
 			
 			// Go to customer only page
 			header('Location: support.php');
-
 		}
 	
 		else {
@@ -81,7 +89,7 @@ if($db_conn) {
 	        <input type="password" placeholder="Password" name="password" id="password" required>
 	        <button type="submit" class="pure-button pure-button-primary" name="login" id="login">Sign in</button>
 	    	<label for="remember">
-          		<input id="remember" name="REMEMBERME" type="checkbox"> Remember me
+          		<input id="remember" name="remember" type="checkbox"> Remember me
        		</label>
 	    </fieldset>
 	    </form>

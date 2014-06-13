@@ -19,8 +19,18 @@ include('oci_functions.php');
         <a class="pure-menu-heading" href="">UBC Air</a>
         <ul>
             <li><a href='index.php'>Home</a></li>
-			<li><a href='login.php'>Login</a></li>
-            <li><a href="register.php">Sign Up</a></li>    
+<?php
+
+	if(!array_key_exists('loggedin', $_COOKIE) ) {
+		echo "<li><a href='login.php'>Login</a></li>";
+		echo "<li><a href='register.php'>Sign Up</a></li>";
+	}
+	else {
+		echo "<li><a href='logout.php'>Logout</a></li>";
+		echo "<li><a href='support.php'>My Orders</a></li>";		
+	}   
+?>    
+            <li><a href='flights.php'>Find flights</a></li>
         </ul>
     </div>
 </div>
@@ -33,13 +43,20 @@ include('oci_functions.php');
 
 <?php
 
-echo "email = ".$_GET['email'];
-
-
+if (isset($_COOKIE["loggedin"])) {
+	echo "Welcome " . $_COOKIE["cname"] . "!<br>";
+}
+else {
+	// Redirect to the login page
+	header('location: login.php');
+}
+/*
 	echo "<div class='content-customer-area'>";
-	echo "<p>Welcome, ".$_GET['cname']
-				."! You are customer id #".$_GET['cid']
-				.". Your email address is ".$_GET['email'];
+	echo "<p>Welcome, ".$_COOKIE['cname']
+				."! You are customer id #".$_COOKIE['cid']
+				.". Your email address is ".$_COOKIE['email'];
 	echo "<br>This is the customer support area. Please select your action from the menu above</p></div>";	
+
+ */
 ?>
 </body>
