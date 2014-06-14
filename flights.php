@@ -118,13 +118,6 @@ $success = True; //keep track of errors so it redirects the page only if there a
 // Functions for interacting with Oracle DBMS	
 include "oci_functions.php";
 
-// Changing the format of Oracle's timestamp data for more friendly look,
-// mode 1 for timestamp, mode 2 for intervals (result of algebraic operations on timestamps)
-function parseDate($value, $mode) {
-	if ($mode == 1) return substr($value, 0, 17);
-	if ($mode == 2) return substr($value, 10, 9);	
-}
-
 // To populate the dropdown frames in the HTML part above with options
 function printoptions($options, $dropdownid) {
 	$it = 1;
@@ -135,59 +128,6 @@ function printoptions($options, $dropdownid) {
 		echo "document.getElementById('$dropdownid').options.add(c, $it)</script>";
 		$it++;
 	}
-}
-
-// Coordinate printing of detailed information regarding each flight on the search result when clicked
-function printDetails($route, $it) {
-	echo "<a href='#' class='toggler' detail-num='$it'>Details</a>"
-    	."<a class='detail$it' style='display:none'>";
-	if (array_key_exists('FIRSTID', $route)) {
-		$firstid = $route['FIRSTID'];
-		printDetailsHelper($firstid);
-	}
-	if (array_key_exists('SECONDID',$route)) {
-		$secondid = $route['SECONDID'];
-		printLayOver($firstid, $secondid);		
-		printDetailsHelper($secondid);
-	}	
-	if (array_key_exists('THIRDID', $route)) {
-		$thirdid = $route['THIRDID'];
-		printLayOver($secondid, $thirdid);
-		printDetailsHelper($route['THIRDID']);
-	}
-	echo "</a>";
-}
-
-// Actually printing detailed information regarding each flight in search result 
-function printDetailsHelper($flightid) {
-	$flight = oci_fetch_array(executePlainSQL("select departap,arrivalap,departtime,arrivaltime,cost,arrivaltime-departtime as ftime from Flight"
-										    ." where fid='$flightid'"),OCI_ASSOC);
-	$departapcode = $flight['DEPARTAP'];
-	$departap = oci_fetch_array(executePlainSQL("select * from Airport"
-											  ." where code='$departapcode'"));
-	$departapname = $departap['APNAME'];
-	$departapcity = $departap['CITY'];
-	$departapcountry = $departap['COUNTRY'];
-	$departtime = parseDate($flight['DEPARTTIME'], 1);
-	$arrivalapcode = $flight['ARRIVALAP'];
-	$arrivalap = oci_fetch_array(executePlainSQL("select * from Airport"
-											  	." where code='$arrivalapcode'"));
-	$arrivalapname = $arrivalap['APNAME'];
-	$arrivalapcity = $arrivalap['CITY'];
-	$arrivalapcountry = $arrivalap['COUNTRY'];
-	$arrivaltime = parseDate($flight['ARRIVALTIME'], 1);
-	$fduration = parseDate($flight['FTIME'],2);
-	echo "<br>Depart from $departapname ($departapcode at $departapcity, $departapcountry) on $departtime GMT"
-		."<br><br>Flight Duration: $fduration"
-    	."<br><br>Arrive at $arrivalapname ($arrivalapcode at $arrivalapcity, $arrivalapcountry) on $arrivaltime GMT";
-}
-
-// Another helper for printDetails, printing wait time between transfer
-function printLayOver($firstid, $secondid) {
-	$layover = oci_fetch_row(executePlainSQL("select F2.departtime-F1.arrivaltime from Flight F1, Flight F2
-									where F1.fid='$firstid' AND F2.fid='$secondid'"));
-	$layovertime = parseDate($layover[0],2);
-	echo "<br>Lay over for $layovertime<br>";	
 }
 
 // Prints the flight search results as a table with show details button and button to select the flight
