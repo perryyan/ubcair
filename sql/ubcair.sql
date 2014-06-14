@@ -12,7 +12,7 @@
 -- format: 2014-09-01 15:05
 ALTER SESSION SET NLS_DATE_FORMAT='YYYY-MM-DD HH24:MI';
 set pagesize 1000
-set linesize 1000000
+set linesize 32767
 set space 3
 
 -- set the current date?
@@ -32,9 +32,9 @@ drop table res_includes cascade constraints;
 drop table has_B cascade constraints;
 drop table last_location cascade constraints;
 
+drop table payment cascade constraints;
 drop table deter_pay cascade constraints;
 
-drop table payment cascade constraints;
 
 
 
@@ -51,7 +51,10 @@ create table Customer(
 	passport_num number(7,0),
 	phone varchar2(20),
 	address varchar2(150)
-	);	
+	);		
+--alter table Customer
+--add constraint invalid_passport_num
+--check ((arrivalTime-departTime) <= interval '24' hour);
 	
 create table Airport(
 	code varchar2(4) PRIMARY KEY,
@@ -60,7 +63,7 @@ create table Airport(
 	country varchar2(4)
 	);
 
---requires max_seat
+--requires max_seat?
 create table Plane(
 	pid varchar2(10) PRIMARY KEY,
 	plane_model varchar2(20),
@@ -75,7 +78,7 @@ create table Flight(
 	arrivalAP varchar2(4),
 	departTime TIMESTAMP,
 	arrivalTime TIMESTAMP,
-	pid varchar2(10),
+	pid varchar2(10) NOT NULL,
 	cost decimal(6,2),
 	FOREIGN KEY (pid) references Plane(pid),
 	FOREIGN KEY (departAP) references Airport(code),
@@ -83,8 +86,13 @@ create table Flight(
 	);
 column departTime format a9
 column arrivalTime format a9
+
+alter table Flight
+add constraint Flight_time_check
+check ((arrivalTime-departTime) <= interval '24' hour);
 	
 --now create tables for reservation	
+-- class[economic = 0, business = 1, first = 2]
 create table make_res(
 	resid number(9,0) PRIMARY KEY,
 	cid number(9,0) NOT NULL,
@@ -92,6 +100,9 @@ create table make_res(
 	ticket_num number(1,0),
 	FOREIGN KEY (cid) references Customer(cid)
 	);
+alter table make_res
+add constraint ticket_num_not_0
+check (ticket_num <> 0);
 	
 create table res_includes(
 	fid varchar2(10) NOT NULL,
@@ -101,10 +112,16 @@ create table res_includes(
 	FOREIGN KEY (fid) references Flight(fid),
 	FOREIGN KEY (resid) references make_res(resid)
 	);
+alter table res_includes
+add constraint resorder_inbetween_1_and_3
+check (resorder >= 1 AND resorder <= 3);
+	
+--create assertion fid_not_valid
+--check (NOT exists ((select fid from res_includes) except (select fid from Flight)));
 	
 	
-	
---now create tables for bags	
+--now create tables for bags
+-- status[in transit=0, lost=1, picked up=2, checked in=3]	
 create table has_B(
 	bid number(9,0) primary key,
 	cid number(9,0) NOT NULL,
@@ -124,20 +141,22 @@ create table last_location(
 
 	
 --now create tables for payment
-create table deter_pay(
-	payid number(9,0) UNIQUE,
-	resid number(9,0) PRIMARY KEY,
-	total_cost decimal(6,2),
-	FOREIGN KEY (resid) references make_res(resid)
-	);
-	
-
 create table payment(
 	payid number(9,0) PRIMARY KEY,
+	--resid number(9,0),
 	creditcard number(12,0),
+	--total_cost decimal(6,2),
 	cid number(9,0) UNIQUE,
-	FOREIGN KEY (payid) references deter_pay(payid),
 	FOREIGN KEY (cid) references Customer(cid)
+	--FOREIGN KEY (resid) references make_res(resid)
+	);
+	
+create table deter_pay(
+	payid number(9,0),
+	resid number(9,0) PRIMARY KEY,
+	total_cost decimal(6,2),
+	FOREIGN KEY (payid) references payment(payid),
+	FOREIGN KEY (resid) references make_res(resid)
 	);
 
 
@@ -182,7 +201,7 @@ insert into Flight VALUES ('10000', 'YVR', 'HKG', '2014-09-01 15:05', '2014-09-0
 insert into Flight VALUES ('10030', 'YVR', 'HKG', '2014-09-01 14:15', '2014-09-02 02:05', 'AA221', '800.00');
 insert into Flight VALUES ('10001', 'YVR', 'LHR', '2014-09-02 12:10', '2014-09-02 22:00', 'AC490', '350.00');
 insert into Flight VALUES ('10002', 'YVR', 'SIN', '2014-09-02 02:00', '2014-09-02 16:20', 'AC005', '500.00');
-insert into Flight VALUES ('10003', 'YVR', 'ICN', '2014-09-02 19:30', '2014-09-04 06:15', 'KA074', '550.00');
+insert into Flight VALUES ('10003', 'YVR', 'ICN', '2014-09-02 19:30', '2014-09-03 06:15', 'KA074', '550.00');
 insert into Flight VALUES ('10004', 'YVR', 'PEK', '2014-09-01 07:15', '2014-09-01 17:55', 'CZ222', '500.00');
 insert into Flight VALUES ('10005', 'LHR', 'SIN', '2014-09-01 18:30', '2014-09-02 02:00', 'BA156', '550.00');
 insert into Flight VALUES ('10006', 'LHR', 'HKG', '2014-09-11 02:00', '2014-09-11 13:40', 'CP030', '500.00');
@@ -221,7 +240,7 @@ column totalTime format a9
 CREATE VIEW trans2(firstid, secondid, dt1, depart, dt2, midd, arrival, totalTime, totalprice) AS
 	select f1.fid, f2.fid, f1.departTime, f1.departAP, f2.departTime, f2.departAP, f2.arrivalAP, (f1.arrivalTime-f1.departTime)+(f2.arrivalTime-f2.departTime) AS totalTime, f1.cost+f2.cost AS totalprice
 	from Flight f1, Flight f2
-	where f1.arrivalAP = f2.departAP AND f2.departTime > f1.arrivalTime AND f1.departAP <> f2.arrivalAP AND (f2.arrivalTime-f1.departTime) < '+000000001 23:59:59.000000000';
+	where f1.arrivalAP = f2.departAP AND f2.departTime > f1.arrivalTime AND f1.departAP <> f2.arrivalAP AND (f2.arrivalTime-f1.departTime) <= '+000000001 23:59:59.000000000';
 column dt1 format a9
 column dt2 format a9
 column totalTime format a9	
@@ -229,7 +248,7 @@ column totalTime format a9
 CREATE VIEW trans3(firstid, secondid, thirdid, dt1, depart, dt2, mid1, dt3, mid2, arrival, totalTime, totalprice) AS
 	select f1.fid, f2.fid, f3.fid, f1.departTime, f1.departAP, f2.departTime, f2.departAP, f3.departTime, f3.departAP, f3.arrivalAP, (f1.arrivalTime-f1.departTime)+(f2.arrivalTime-f2.departTime)+(f3.arrivalTime-f3.departTime) AS totalTime, f1.cost+f2.cost+f3.cost AS totalprice
 	from Flight f1, Flight f2, Flight f3
-	where f1.arrivalAP = f2.departAP AND f2.arrivalAP = f3.departAP AND f2.departTime > f1.arrivalTime AND f3.departTime > f2.arrivalTime AND f1.departAP <> f2.arrivalAP AND f1.departAP<>f3.arrivalAP AND (f3.arrivalTime-f1.departTime) < '+000000001 23:59:59.000000000';
+	where f1.arrivalAP = f2.departAP AND f2.arrivalAP = f3.departAP AND f2.departTime > f1.arrivalTime AND f3.departTime > f2.arrivalTime AND f1.departAP <> f2.arrivalAP AND f1.departAP<>f3.arrivalAP AND (f3.arrivalTime-f1.departTime) <= '+000000001 23:59:59.000000000';
 column dt1 format a9
 column dt2 format a9
 column dt3 format a9
@@ -243,13 +262,55 @@ UNION
 	from trans2 t2
 UNION
 	select t3.firstid, t3.secondid, t3.thirdid, t3.dt1, t3.depart, t3.dt2, t3.mid1, t3.dt3, t3.mid2, t3.arrival, t3.totalTime, t3.totalprice 
-	from trans3 t3
-;
+	from trans3 t3;
 
 CREATE VIEW Flight_time(fTime, depart, departCity, departCo, arrival, arrivalCity, arrivalCo) AS
 	select f.totaltime, f.depart, a1.city, a1.country, f.arrival, a2.city, a2.country
 	from allFlight f, airport a1, airport a2
 	where f.depart = a1.code AND f.arrival = a2.code;
 column fTime format a9	
-	
-	
+
+-- query
+
+-- other inserts samples
+--Customer(cid, email, password, cname, passport_contry, passport_num, phone, address)
+insert into Customer VALUES(0, 'shirley5001@hotmail.com', '1234', 'shirley', 'CN', '1234567', '7783212769', '1234567');
+insert into Customer VALUES(1, '418446548@qq.com', '1234', 'shirley', 'CN', '1234567', '7783212769', '1234567');
+--make_res(resid, cid, pclass, ticket_num)
+insert into make_res VALUES(0, 0, 0, 1);
+insert into make_res VALUES(1, 0, 0, 1);
+insert into make_res VALUES(2, 1, 0, 2);
+insert into make_res VALUES(3, 1, 1, 1);
+--res_includes(fid, resid, resorder)
+insert into res_includes VALUES(10000, 0, 1);
+insert into res_includes VALUES(10000, 1, 1);
+insert into res_includes VALUES(10004, 2, 1);
+insert into res_includes VALUES(10023, 2, 2);
+insert into res_includes VALUES(10030, 3, 1);
+--insert into has_B VALUES();
+--insert into last_location VALUES();
+drop view Detail cascade constraints;
+drop view Final_pay cascade constraints;
+
+create VIEW Detail(cid, resid, tcost) AS
+select m.cid, m.resid, (m.ticket_num*f.cost)+(m.pclass*100) AS tcost
+from make_res m, res_includes r, Flight f
+where m.resid = r.resid AND r.fid = f.fid;
+
+-- do selection here
+--payment(payid, creditcard, cid)
+insert into payment VALUES(0, 23456789012, 0);
+insert into payment VALUES(1, 123465749281, 1);
+
+--deter_pay(payid, resid, total_cost)
+insert into deter_pay
+select p.payid, d.resid, SUM(d.tcost) AS total_cost
+from payment p, detail d
+where p.cid = d.cid
+group by p.payid, d.resid;
+
+--query on final cost
+create view Final_pay(payid, price) AS
+select payid, SUM(total_cost)
+from deter_pay
+group by payid;
