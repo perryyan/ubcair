@@ -125,15 +125,18 @@ check (resorder >= 1 AND resorder <= 3);
 create table has_B(
 	bid number(9,0) primary key,
 	cid number(9,0) NOT NULL,
-	status int,
-	weight_kg decimal(3,2),
+	status number(1,0),
+	weight_kg decimal(6,2),
 	--code varchar2(4),
 	FOREIGN KEY (cid) references Customer(cid)
 	);
-	
+alter table has_B
+add constraint invalid_status
+check (status >= 0 AND status <= 3);
+
 create table last_location(
 	bid number(9,0) PRIMARY KEY,
-	code varchar2(4),
+	code varchar2(4) NOT NULL,
 	FOREIGN KEY (code) references Airport(code),
 	FOREIGN KEY (bid) references has_B(bid)
 	);
@@ -143,12 +146,9 @@ create table last_location(
 --now create tables for payment
 create table payment(
 	payid number(9,0) PRIMARY KEY,
-	--resid number(9,0),
 	creditcard number(12,0),
-	--total_cost decimal(6,2),
 	cid number(9,0) UNIQUE,
 	FOREIGN KEY (cid) references Customer(cid)
-	--FOREIGN KEY (resid) references make_res(resid)
 	);
 	
 create table deter_pay(
@@ -158,6 +158,13 @@ create table deter_pay(
 	FOREIGN KEY (payid) references payment(payid),
 	FOREIGN KEY (resid) references make_res(resid)
 	);
+create ASSERTION assert
+check (NOT exists ((select payid from payment) except (select payid from deter_pay)));	
+	
+--alter table deter_pay
+--add constraint payid_check
+--check (NOT exists ((select payid from payment) except (select payid from deter_pay)));
+	
 
 
 --
@@ -287,16 +294,30 @@ insert into res_includes VALUES(10000, 1, 1);
 insert into res_includes VALUES(10004, 2, 1);
 insert into res_includes VALUES(10023, 2, 2);
 insert into res_includes VALUES(10030, 3, 1);
---insert into has_B VALUES();
---insert into last_location VALUES();
+
+--has_B(bid, cid, status, weight_kg)
+insert into has_B VALUES(0, 0, 3, 36.20);
+insert into has_B VALUES(1, 0, 3, 28.00);
+--last_location(bid, code)
+insert into last_location VALUES(0, 'YVR');
+insert into last_location VALUES(1, 'YVR');
+
+-- more views
+drop view Bag_num cascade constraints;
 drop view Detail cascade constraints;
 drop view Final_pay cascade constraints;
 
-create VIEW Detail(cid, resid, tcost) AS
-select m.cid, m.resid, (m.ticket_num*f.cost)+(m.pclass*100) AS tcost
-from make_res m, res_includes r, Flight f
-where m.resid = r.resid AND r.fid = f.fid;
+create VIEW Bag_num(cid, num_B) AS
+	select h.cid, COUNT(bid)
+	from has_B h
+	group by h.cid;
 
+create VIEW Detail(cid, resid, tcost) AS
+	select m.cid, m.resid, (m.ticket_num*f.cost)+(m.pclass*100) AS tcost
+	from make_res m, res_includes r, Flight f
+	where m.resid = r.resid AND r.fid = f.fid;
+
+	
 -- do selection here
 --payment(payid, creditcard, cid)
 insert into payment VALUES(0, 23456789012, 0);
@@ -311,6 +332,6 @@ group by p.payid, d.resid;
 
 --query on final cost
 create view Final_pay(payid, price) AS
-select payid, SUM(total_cost)
-from deter_pay
-group by payid;
+	select payid, SUM(total_cost)
+	from deter_pay
+	group by payid;
