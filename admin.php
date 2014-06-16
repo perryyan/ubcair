@@ -20,19 +20,33 @@
 </form>
 
 <script>
+<!-- Check inputs in insert form -->
 	function validateInsert() {
 		var elements = document.forms["insertform"].elements;
 	    for (e in elements) {
 	    	if (elements[e].name == "tablename") break;
 	    	var validity = isValid(elements[e].name, elements[e].value);
-	    	if (validity !== true) {
-	    		alert("Invalid input to regex: " + validity);
-	    		return false;
-	    	}
+	    	if (!validity) return false;
 	    }
    		 return true;	
 	}
 	
+<!-- Check inputs in update form-->
+	function validateUpdate() {
+		var elements = document.forms["updateform"].elements;
+		var validity = isValid(elements["field2change"].value, elements["newvalue"].value);
+		var validity2 = isValid(elements["updatesearchby"].value, elements["searchedvalue"].value);	
+		if (!validity || !validity2) return false;
+		else return true;
+	}
+
+<!-- Check input in delete form -->
+	function validateDelete() {
+		var elements = document.forms["deleteform"].elements;
+		return isValid(elements["deletesearchby"].value, elements["searchedvalue"].value);	
+	}
+
+<!-- Helper, actually checks given input vs. attribute name, using regular expressions -->
 	function isValid(name, value) {
 		var pattern;
 		switch (name) {
@@ -62,7 +76,10 @@
 		case "ARRIVALTIME": pattern = /.+/; break;			
 		default: pattern = /^\w\w*\w$/;
 		}
-		if (!pattern.test(value)) return name + " " + pattern;
+		if (!pattern.test(value)) {
+			alert("Invalid input, " + name + " has regex " + pattern);
+			return false;
+		}
 		else return true; 
 	}
 </script>
@@ -128,7 +145,7 @@ function printInsertFields($table, $attributes) {
 
 // Prints the form to update table data
 function printUpdateFields($table, $attributes) {
-	$form = "<form method='POST' action='admin.php'><table>" 
+	$form = "<form method='POST' name ='updateform' action='admin.php' onsubmit='return validateUpdate()'><table>" 
 	. "<tr><td>Search row by: </td><td><select id='updatesearchby' name='updatesearchby'>"
 	. "<option selected value='default'>(Select Column)</option>";
 	for ($it=0; $it < count($attributes); $it++) {
@@ -151,7 +168,7 @@ function printUpdateFields($table, $attributes) {
 }
 // Prints the form to delete table data
 function printDeleteFields($table, $attributes) {
-	$form = "<form method='POST' action='admin.php'><table>" 
+	$form = "<form method='POST' name='deleteform' action='admin.php' onsubmit='return validateDelete()'><table>" 
 	. "<tr><td>Search row by: </td><td><select id='deletesearchby' name='deletesearchby'>"
 	. "<option selected value='default'>(Select Column)</option>";
 	for ($it=0; $it < count($attributes); $it++) {
