@@ -82,13 +82,13 @@ echo "<tr><td>Earliest Date</td><td><input type='date' name='flightdate' id='fli
 </tr>
 <tr>
 <td>Enter number of tickets: </td>
-<td><input type="number" name="numtickets" id="numtickets" min="1" value="1" style="width:60px" required></td>
+<td><input type="number" name="numtickets" id="numtickets" min="1" value="1" style="width:60px" onchange="this.form.submit()" required></td>
 </tr>
 <tr>
 <td>Preferred class:</td>
 <td>
-<select name="flightclass" id="flightclass">
-	<option value="economy">Economy class</option>
+<select name="flightclass" id="flightclass" onchange="this.form.submit()">
+	<option value="economy" selected>Economy class</option>
 	<option value="business">Business class</option>
 	<option value="first">First class</option>
 </select>
