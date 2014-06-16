@@ -63,7 +63,6 @@ create table Airport(
 	country varchar2(4)
 	);
 
---requires max_seat?
 create table Plane(
 	pid varchar2(10) PRIMARY KEY,
 	plane_model varchar2(20),
@@ -144,6 +143,7 @@ create table last_location(
 
 	
 --now create tables for payment
+-- so cid is not unique anymore
 create table payment(
 	payid number(9,0) PRIMARY KEY,
 	creditcard number(12,0),
@@ -158,8 +158,8 @@ create table deter_pay(
 	FOREIGN KEY (payid) references payment(payid),
 	FOREIGN KEY (resid) references make_res(resid)
 	);
-create ASSERTION assert
-check (NOT exists ((select payid from payment) except (select payid from deter_pay)));	
+CREATE ASSERTION assert check (
+NOT exists ((select payid from payment) except (select payid from deter_pay)));	
 	
 --alter table deter_pay
 --add constraint payid_check
@@ -313,8 +313,8 @@ create VIEW Bag_num(cid, num_B) AS
 	group by h.cid;
 
 create VIEW Detail(cid, resid, tcost) AS
-	select m.cid, m.resid, (m.ticket_num*f.cost)+(m.pclass*100) AS tcost
-	from make_res m, res_includes r, Flight f
+	select cid, m.resid, (m.ticket_num*f.cost)+(m.pclass*100) AS tcost
+	from Flight f, res_includes r, make_res m
 	where m.resid = r.resid AND r.fid = f.fid;
 
 	
@@ -335,3 +335,41 @@ create view Final_pay(payid, price) AS
 	select payid, SUM(total_cost)
 	from deter_pay
 	group by payid;
+
+	
+-- more queries
+-- nested aggregation
+-- find the company that has more then one plane and find times used of those plane and the average cost of their flights
+--Plane(pid, plane_model, airline, currAP)
+--Flight(fid, departAP, arrivalAP, arrivalTime, pid, cost)
+
+select p2.pid, count(f.fid) AS f_num, AVG(f.cost)
+from flight f, plane p2
+where f.pid = p2.pid AND p2.airline IN (select p.airline
+                     from Plane p
+                     group by p.airline
+                     having COUNT(p.pid)>1)
+group by p2.pid;
+
+-- division
+-- find the reservation ID that used both fid 10030 and 10011, then 10004 and 10023
+select r.resid
+from res_includes r
+where r.fid = '10030' AND r.resid = (select resid
+                                     from res_includes r2
+                                     where r2.fid = '10011');
+
+select r.resid
+from res_includes r
+where r.fid = '10004' AND r.resid = (select resid
+                                     from res_includes r2
+                                     where r2.fid = '10023');
+									 
+
+								
+
+
+
+
+
+
