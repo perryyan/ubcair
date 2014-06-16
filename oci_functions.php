@@ -10,9 +10,13 @@ function parseDate($value, $mode) {
 }
 
 // Coordinate printing of detailed information regarding each flight on the search result when clicked
-function printDetails($route, $it) {
-	echo "<a href='#' class='toggler' detail-num='$it'>Details</a>"
+// JSenable: 1 to use the HTML/JS toggle details, 0 to turn off (show as plain text)
+function printDetails($route, $it, $JSenable) {
+	
+	if($JSenable) {
+		echo "<a href='#' class='toggler' detail-num='$it'>Details</a>"
     	."<a class='detail$it' style='display:none'>";
+	}
 	if (array_key_exists('FIRSTID', $route)) {
 		$firstid = $route['FIRSTID'];
 		printDetailsHelper($firstid);
@@ -27,7 +31,9 @@ function printDetails($route, $it) {
 		printLayOver($secondid, $thirdid);
 		printDetailsHelper($route['THIRDID']);
 	}
-	echo "</a>";
+	if($JSenable) {
+		echo "</a>";
+	}
 }
 
 // Actually printing detailed information regarding each flight in search result 

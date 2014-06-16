@@ -175,7 +175,7 @@ function printFlights($flights, $locations) {
 		echo $printout . "<td>$departtime</td><td>$flighttime</td><td>$cost</td>";
 		echo "<td><input type='radio' name='flightchoice' value='$flight_string' required></td></tr>";
 		echo "<tr><td>";
-		printDetails($flight, $it);
+		printDetails($flight, $it, 1);
 		echo "</td></tr>";
 		$it++;
 	}		
