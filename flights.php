@@ -152,11 +152,11 @@ function printFlights($flights, $locations) {
 		$departtime = parseDate($flight['DT1'], 1);
 		$flighttime = parseDate($flight['TOTALTIME'],2);
 		$cost = $flight['TOTALPRICE'];
-		
+		$fclassint = 0;		
 		// Variable costs depends on class
 		if(strcmp($_COOKIE['flightclass'], "economy") == 0 ) {
 			$cost *= 1;
-			$fclassint = 0;
+			$fclassint = 0;			
 		}
 		else if (strcmp($_COOKIE['flightclass'], "business") == 0) {
 			$cost *= 3;
