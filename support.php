@@ -24,6 +24,7 @@ include('oci_functions.php');
 	if(!array_key_exists('loggedin', $_COOKIE) ) {
 		echo "<li><a href='login.php'>Login</a></li>";
 		echo "<li><a href='register.php'>Sign Up</a></li>";
+		header('location: login.php');
 	}
 	else {
 		echo "<li><a href='logout.php'>Logout</a></li>";
@@ -46,13 +47,8 @@ include('oci_functions.php');
 <div class="content-customer-area">
 <?php
 
-if (isset($_COOKIE["loggedin"])) {
-	echo "Welcome " . $_COOKIE["cname"] . "!<br>";
-}
-else {
-	// Redirect to the login page
-	header('location: login.php');
-}
+echo "Welcome " . $_COOKIE["cname"] . "!<br>";
+
 ?>
 
 <a href='profile.php'>Edit my profile</a><br>
