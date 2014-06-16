@@ -125,17 +125,14 @@ function printResult($result) { //prints results from a select statement
 // Connect Oracle...
 if ($db_conn) {
 
+
 	if (array_key_exists('reset', $_POST)) {
+		/*
 		// Drop old table...
 		echo "<br> dropping table <br>";
 		executePlainSQL("drop table Customer");
 		executePlainSQL("drop table UserInfo");
 		executePlainSQL("drop sequence cid_sequence");
-		/*// Create new table...
-		echo "<br> creating new table <br>";
-		executePlainSQL("create table tab1 (nid number, name varchar2(30), primary key (nid))");
-		OCICommit($db_conn);
-		*/
 		
 		// Create user account table (Customers)
 		executePlainSQL(
@@ -159,51 +156,63 @@ if ($db_conn) {
 
 						
 		OCICommit($db_conn);
-
+		*/
 
 	} else
 		if (array_key_exists('insertsubmit', $_POST)) {
 			
 			// check if email is taken
-			$q = "select count(*) from Customer where email = '".$_POST['email']."'";
+			$q = "select * from Customer where email = '".$_POST['email']."'";
 			$numrows = countRows($db_conn, $q);
+			
 			if($numrows == 1) {
-				echo "Error: Email address already registered. Please try a different email address";
 				$success = 0;
+				?>
+				<script type="text/javascript"> 
+					alert("Error: Email address already registered. Please try a different email address"); 
+				</script>
+				<?php
 			}
-			
-			//Getting the values from user and insert data into the table
-			$tuple = array (
-				":bind1" => $_POST['cid'],
-				":bind2" => $_POST['email'],
-				":bind3" => $_POST['password'],
-				":bind4" => $_POST['cname'],
-				":bind5" => $_POST['passport_country'],
-				":bind6" => $_POST['passport_num'],
-				":bind7" => $_POST['phone#'],
-				":bind8" => $_POST['address']				
-			);
-			$alltuples = array (
-				$tuple
-			);
-			
-			executeBoundSQL("insert into Customer values (
-							cid_sequence.nextval, 	
-							:bind2,
-							:bind3,
-							:bind4,
-							:bind5,
-							:bind6,
-							:bind7,
-							:bind8
-							)", $alltuples);
-							
-			OCICommit($db_conn);
-
+			else {
+				$success = 1;
+				//Getting the values from user and insert data into the table
+				$tuple = array (
+					":bind1" => $_POST['cid'],
+					":bind2" => $_POST['email'],
+					":bind3" => $_POST['password'],
+					":bind4" => $_POST['cname'],
+					":bind5" => $_POST['passport_country'],
+					":bind6" => $_POST['passport_num'],
+					":bind7" => $_POST['phone#'],
+					":bind8" => $_POST['address']				
+				);
+				$alltuples = array (
+					$tuple
+				);
+				
+				executeBoundSQL("insert into Customer values (
+								cid_sequence.nextval, 	
+								:bind2,
+								:bind3,
+								:bind4,
+								:bind5,
+								:bind6,
+								:bind7,
+								:bind8
+								)", $alltuples);
+								
+				OCICommit($db_conn);
+				
+			}
 		}		
 
-	if ($_POST && $success) {
-		header("location: register.php");
+	if ( $_POST && $success) {
+				?>
+				<script type="text/javascript"> 
+					alert("Successfully registered. Click OK to be redirected to the login page.");
+					location = "login.php";
+				</script>
+				<?php
 	} 
 
 	//Commit to save changes...

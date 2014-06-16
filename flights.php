@@ -156,19 +156,24 @@ function printFlights($flights, $locations) {
 		// Variable costs depends on class
 		if(strcmp($_COOKIE['flightclass'], "economy") == 0 ) {
 			$cost *= 1;
+			$fclassint = 0;
 		}
 		else if (strcmp($_COOKIE['flightclass'], "business") == 0) {
 			$cost *= 3;
+			$fclassint = 1;
 		}
 		
 		else if (strcmp($_COOKIE['flightclass'], "first") == 0 ) {
 			$cost *= 5;
+			$fclassint = 2;
 		}
 		// update the cost if the class is changed
 		$flight['TOTALPRICE'] = $cost;  
 		
 		// Add class and num tickets to the post array
 		$flight['CLASS'] = $_COOKIE['flightclass'];
+		$flight['CLASSINT'] = $fclassint;
+		
 		$flight['NUMTICKETS'] = $_COOKIE['numtickets'];
 			
 		$flight_string = serialize($flight);
