@@ -41,6 +41,9 @@ include('oci_functions.php');
     </h1>
 </div>
 
+
+<body>
+<div class="content-customer-area">
 <?php
 
 if (isset($_COOKIE["loggedin"])) {
@@ -50,13 +53,10 @@ else {
 	// Redirect to the login page
 	header('location: login.php');
 }
-/*
-	echo "<div class='content-customer-area'>";
-	echo "<p>Welcome, ".$_COOKIE['cname']
-				."! You are customer id #".$_COOKIE['cid']
-				.". Your email address is ".$_COOKIE['email'];
-	echo "<br>This is the customer support area. Please select your action from the menu above</p></div>";	
-
- */
 ?>
+
+<a href='profile.php'>Edit my profile</a><br>
+<a href='list_reservation.php'>My reservations</a>
+
+</div>
 </body>

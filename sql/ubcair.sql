@@ -147,14 +147,14 @@ create table last_location(
 create table payment(
 	payid number(9,0) PRIMARY KEY,
 	creditcard number(12,0),
-	cid number(9,0) UNIQUE,
+	cid number(9,0),
 	FOREIGN KEY (cid) references Customer(cid)
 	);
 	
 create table deter_pay(
 	payid number(9,0),
 	resid number(9,0) PRIMARY KEY,
-	total_cost decimal(6,2),
+	total_cost decimal(10,2),
 	FOREIGN KEY (payid) references payment(payid),
 	FOREIGN KEY (resid) references make_res(resid)
 	);

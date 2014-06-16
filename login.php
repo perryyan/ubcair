@@ -71,10 +71,13 @@ if($db_conn) {
 			
 			// Go to customer only page
 			header('Location: support.php');
-		}
-	
-		else {
-			echo "<p>Invalid login or password. Click <a href='login.php'>here</a> to go back.<p>";
+		} else {
+			?>
+			<script type="text/javascript"> 
+				alert("Unable to sign in. Please check your username and password combination.");
+				location = "login.php";
+			</script>
+			<?php
 		}
 	}
 	

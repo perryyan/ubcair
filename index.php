@@ -23,6 +23,7 @@
 	}
 	else {
 		echo "<li><a href='logout.php'>Logout</a></li>";
+		echo "<li><a href='support.php'>My Orders</a></li>";
 	}   
 ?>    
 			<li><a href="flights.php">Find flights</a></li>   

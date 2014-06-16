@@ -19,8 +19,6 @@
             <li><a href='index.php'>Home</a></li>
 <?php
 
-	session_start();
-
 	if(!array_key_exists('loggedin', $_COOKIE) ) {
 		echo "<li><a href='login.php'>Login</a></li>";
 		echo "<li><a href='register.php'>Sign Up</a></li>";
@@ -60,26 +58,56 @@ include "oci_functions.php";
 if ($db_conn) {
 	
 	if (array_key_exists('makeres', $_POST)) {
-				
+		
 		// Insert reservation tuple into make_res
 		// (resid, cid, pclass, ticket_num) 
-		$resid = rand(1000,999999);
 		executePlainSQL("insert into make_res values ("
 						.$_POST['makeres_resid'].","
 						.$_COOKIE['cid'].","
 						.$_POST['makeres_classint'].","
 						.$_POST['makeres_numtickets'].")");
+		OCICommit($db_conn);			
+		
+		// res_includes(fid, resid, resorder)
+		$fids = array($_POST['fid1'], $_POST['fid2'], $_POST['fid3']);
+
+		foreach($fids as $key=>$value) {
+			//echo $fids[$key]."<br>";
+			if( $fids[$key] != "") {
+				executePlainSQL("insert into res_includes values ("
+					.$value.","
+					.$_POST['makeres_resid'].","
+					.number_format($key+1).")");
+			}
+		}
+
 		OCICommit($db_conn);
+		
+		executePlainSQL("insert into payment values("
+				.$_POST['makeres_payid'].","
+				.$_POST['credit'].","
+				.$_COOKIE['cid'].")");	
+				
+		OCICommit($db_conn);		
+		
+		executePlainSQL("insert into deter_pay values("
+				.$_POST['makeres_payid'].","
+				.$_POST['makeres_resid'].","
+				.$_POST['makeres_totalcost'].")");
+		
+		OCICommit($db_conn);
+		
+		// Confirmation dialog
 		?>
 		<script type="text/javascript"> 
-				alert("Ticket reservation booked. Click OK to be redirected to the payment page.");
-				location = "payment.php";
+			alert("Payment successful.");
+			location = "support.php";
 		</script>
 		<?php
 	}
 	
 	else {
-		//print_r($flight);
+		//print_r($res);
 		echo "Your flight itinerary:";
 		printDetails($res, 0, 0);	
 		
@@ -119,11 +147,16 @@ if ($db_conn) {
 }
 
 ?>
-		<form method="POST" action="reservation.php">
-		<input type="hidden" name="makeres_classint" value="<?php echo $res['CLASSINT']; ?>"> 
-		<input type="hidden" name="makeres_numtickets" value="<?php echo $res['NUMTICKETS']; ?>"> 
-		<input type="hidden" name="makeres_resid" value="<?php echo rand(1,1000000); ?>"> 
-		<input type="hidden" name="makeres_payid" value="<?php echo rand(1,1000000); ?>"> 						
-	    <button type="submit" name="makeres" class="pure-button pure-button-primary">Pay now</button>
+		<form class="pure-form" method="POST" action="reservation.php">
+			<input type="hidden" name="makeres_totalcost" value="<?php echo $tcost; ?>">
+			<input type="hidden" name="makeres_classint" value="<?php echo $res['CLASSINT']; ?>"> 
+			<input type="hidden" name="makeres_numtickets" value="<?php echo $res['NUMTICKETS']; ?>"> 
+			<input type="hidden" name="makeres_resid" value="<?php echo rand(10000000,99999999); ?>"> 
+			<input type="hidden" name="makeres_payid" value="<?php echo rand(10000000,99999999); ?>">
+			<input type="hidden" name="fid1" value="<?php echo $res['FIRSTID']; ?>"> 	
+			<input type="hidden" name="fid2" value="<?php echo $res['SECONDID']; ?>"> 	
+			<input type="hidden" name="fid3" value="<?php echo $res['THIRDID']; ?>"> 	
+			<input type="number" placeholder="Credit Card Number" name="credit" id="credit" required>											
+		    <button type="submit" name="makeres" class="pure-button pure-button-primary">Pay now</button>
 	    </form>
 </div></body> 
