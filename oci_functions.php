@@ -7,6 +7,7 @@ $db_conn = OCILogon("ora_c2e8", "a42375105", "ug");
 function parseDate($value, $mode) {
 	if ($mode == 1) return substr($value, 0, 17);
 	if ($mode == 2) return substr($value, 10, 9);	
+	if ($mode == 3) return substr($date, 0,10) . substr($date, 11);
 }
 
 // Coordinate printing of detailed information regarding each flight on the search result when clicked
