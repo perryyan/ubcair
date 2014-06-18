@@ -44,14 +44,13 @@
 session_start();
 
 include('oci_functions.php');
-include 'pw.php';
 
 // connect to database
 if($db_conn) {
 	
 	if(!empty($_POST['email']) && !empty($_POST['password']) && !(array_key_exists('login', $_COOKIE)) ) {
 	    $email = $_POST['email'];
-		$password = generate_hash($_POST['password']);
+		$password = $_POST['password'];
 	
 	    $loginquery = "SELECT * FROM Customer WHERE email = '".$email."' AND password = '".$password."'";
 
