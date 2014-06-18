@@ -163,7 +163,7 @@ create table last_location(
 -- pid->creditcard
 create table payment(
 	payid number(9,0) PRIMARY KEY,
-	creditcard number(12,0),
+	creditcard number(16,0),
 	cid number(9,0),
 	FOREIGN KEY (cid) references Customer(cid)
 	);
