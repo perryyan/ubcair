@@ -42,10 +42,13 @@ drop table deter_pay cascade constraints;
 -- Now, add each table.
 --
 -- Customer is not in BCNF
+-- cid->email, cname, passport_country, passport_num, phone, address
+-- email->password
+-- email->cname, passport_country, passport_num, phone, address
 create table Customer(
 	cid number(9,0) PRIMARY KEY,
 	email varchar2(30) UNIQUE,
-	password varchar(16),
+	password  varchar(16),
 	cname varchar2(20),
 	passport_country varchar2(3),
 	passport_num number(7,0),
@@ -53,10 +56,9 @@ create table Customer(
 	address varchar2(150),
 	is_admin number(1,0)
 	);		
---alter table Customer
---add constraint invalid_passport_num
---check ((arrivalTime-departTime) <= interval '24' hour);
 	
+-- Airport in BCNF	
+-- code->apname, city, country
 create table Airport(
 	code varchar2(4) PRIMARY KEY,
 	apname varchar2(50),
@@ -64,6 +66,8 @@ create table Airport(
 	country varchar2(4)
 	);
 
+-- Plane in BCNF
+-- pid->plane_model, airline, currAP	
 create table Plane(
 	pid varchar2(10) PRIMARY KEY,
 	plane_model varchar2(20),
@@ -71,7 +75,9 @@ create table Plane(
 	currAP varchar2(4) NOT NULL,
 	FOREIGN KEY (currAP) references Airport(code)
 	);
-	
+
+-- Flight in BCNF
+-- fid->departAP, arrivalAP, departTime, arrivalTime, pid, cost	
 create table Flight(
 	fid varchar2(10) PRIMARY KEY,
 	departAP varchar2(4),
@@ -93,6 +99,9 @@ check ((arrivalTime-departTime) <= interval '24' hour);
 	
 --now create tables for reservation	
 -- class[economic = 0, business = 1, first = 2]
+-- make_res NOT in BCNF?
+-- cid->resid
+-- resid->pclass, ticket_num
 create table make_res(
 	resid number(9,0) PRIMARY KEY,
 	cid number(9,0) NOT NULL,
@@ -104,6 +113,8 @@ alter table make_res
 add constraint ticket_num_not_0
 check (ticket_num <> 0);
 	
+-- res_includes in BCNF
+-- (fid, resid)->resorder	
 create table res_includes(
 	fid varchar2(10) NOT NULL,
 	resid number(9,0),
@@ -116,12 +127,12 @@ alter table res_includes
 add constraint resorder_inbetween_1_and_3
 check (resorder >= 1 AND resorder <= 3);
 	
---create assertion fid_not_valid
---check (NOT exists ((select fid from res_includes) except (select fid from Flight)));
-	
 	
 --now create tables for bags
 -- status[in transit=0, lost=1, picked up=2, checked in=3]	
+-- has_B NOT in BCNF?
+-- cid->bid
+-- bid->status, weight_kg
 create table has_B(
 	bid number(9,0) primary key,
 	cid number(9,0) NOT NULL,
@@ -134,6 +145,8 @@ alter table has_B
 add constraint invalid_status
 check (status >= 0 AND status <= 3);
 
+-- last_location in BCNF
+-- bid->code
 create table last_location(
 	bid number(9,0) PRIMARY KEY,
 	code varchar2(4) NOT NULL,
@@ -145,6 +158,9 @@ create table last_location(
 	
 --now create tables for payment
 -- so cid is not unique anymore
+-- payment in BCNF???
+-- cid->pid
+-- pid->creditcard
 create table payment(
 	payid number(9,0) PRIMARY KEY,
 	creditcard number(12,0),
@@ -152,6 +168,8 @@ create table payment(
 	FOREIGN KEY (cid) references Customer(cid)
 	);
 	
+-- deter_pay in BCNF
+-- payid->resid, total_cost	
 create table deter_pay(
 	payid number(9,0),
 	resid number(9,0) PRIMARY KEY,
@@ -159,13 +177,7 @@ create table deter_pay(
 	FOREIGN KEY (payid) references payment(payid),
 	FOREIGN KEY (resid) references make_res(resid)
 	);
-CREATE ASSERTION assert check (
-NOT exists ((select payid from payment) except (select payid from deter_pay)));	
-	
---alter table deter_pay
---add constraint payid_check
---check (NOT exists ((select payid from payment) except (select payid from deter_pay)));
-	
+
 
 
 --
@@ -286,16 +298,22 @@ insert into Customer VALUES(0, 'shirley5001@hotmail.com', '1234', 'shirley', 'CN
 insert into Customer VALUES(1, '418446548@qq.com', '1234', 'shirley', 'CN', '1234567', '7783212769', '1234567', '0');
 insert into Customer VALUES(2, 'admin@admin', '1234', 'Admin', 'CA', '1234567', '12345678', '1234567', '1');
 --make_res(resid, cid, pclass, ticket_num)
-insert into make_res VALUES(0, 0, 0, 1);
-insert into make_res VALUES(1, 0, 0, 1);
-insert into make_res VALUES(2, 1, 0, 2);
-insert into make_res VALUES(3, 1, 1, 1);
+insert into make_res VALUES(0, 0, 1, 1);
+insert into make_res VALUES(1, 0, 1, 1);
+insert into make_res VALUES(2, 1, 1, 2);
+insert into make_res VALUES(3, 1, 3, 1);
+insert into make_res VALUES(4, 1, 1, 1);
+-- insert into make_res VALUES(5, 1, 1, 1);
 --res_includes(fid, resid, resorder)
-insert into res_includes VALUES(10000, 0, 1);
-insert into res_includes VALUES(10000, 1, 1);
-insert into res_includes VALUES(10004, 2, 1);
-insert into res_includes VALUES(10023, 2, 2);
-insert into res_includes VALUES(10030, 3, 1);
+insert into res_includes VALUES('10000', 0, 1);
+insert into res_includes VALUES('10000', 1, 1);
+insert into res_includes VALUES('10004', 2, 1);
+insert into res_includes VALUES('10023', 2, 2);
+insert into res_includes VALUES('10030', 3, 1);
+insert into res_includes VALUES('10030', 4, 1);
+insert into res_includes VALUES('10011', 4, 2);
+insert into res_includes VALUES('10023', 4, 3);
+-- insert into res_includes VALUES('10000', 5, 1);
 
 --has_B(bid, cid, status, weight_kg)
 insert into has_B VALUES(0, 0, 3, 36.20);
@@ -315,9 +333,9 @@ create VIEW Bag_num(cid, num_B) AS
 	group by h.cid;
 
 create VIEW Detail(cid, resid, pclass, ticket_num, fids, resorder, cost, tcost) AS
- select m.cid, m.resid, m.pclass, m.ticket_num, r.fid, r.resorder, f.cost, (m.ticket_num*f.cost)+(m.pclass*100) AS tcost
- from make_res m, res_includes r, Flight f
- where m.resid = r.resid AND r.fid = f.fid;
+	select m.cid, m.resid, m.pclass, m.ticket_num, r.fid, r.resorder, f.cost, (m.ticket_num*f.cost)*m.pclass AS tcost
+	from make_res m, res_includes r, Flight f
+	where m.resid = r.resid AND r.fid = f.fid;
 
 	
 -- do selection here
@@ -345,31 +363,57 @@ create view Final_pay(payid, price) AS
 --Plane(pid, plane_model, airline, currAP)
 --Flight(fid, departAP, arrivalAP, arrivalTime, pid, cost)
 
-select p2.pid, count(f.fid) AS f_num, AVG(f.cost)
+select p2.airline, p2.pid, count(f.fid) AS f_num, AVG(f.cost)
 from flight f, plane p2
 where f.pid = p2.pid AND p2.airline IN (select p.airline
                      from Plane p
                      group by p.airline
                      having COUNT(p.pid)>1)
-group by p2.pid;
+group by p2.airline, p2.pid
+order by p2.airline;
 
 -- division
 -- find the reservation ID that used both fid 10030 and 10011, then 10004 and 10023
 select r.resid
 from res_includes r
-where r.fid = '10030' AND r.resid = (select resid
+where r.fid = '10030' AND r.resid IN (select r2.resid
                                      from res_includes r2
                                      where r2.fid = '10011');
 
 select r.resid
 from res_includes r
-where r.fid = '10004' AND r.resid = (select resid
+where r.fid = '10004' AND r.resid IN (select r2.resid
                                      from res_includes r2
                                      where r2.fid = '10023');
 									 
+									 
+select p2.airline, count(f2.fid) AS flight_num, avg(f2.cost) AS avgCost
+from plane p2, flight f2
+where p2.pid = f2.pid
+group by p2.airline
+having avg(f2.cost) <= ALL (select avg(f.cost)
+from Plane p, flight f
+where p.pid = f.pid
+group by p.airline)
+;
 
-								
+									 
+									 
+drop view resorder1 cascade constraints;
+drop view resorder2 cascade constraints;	
+	
+create view resorder1 AS 
+select * 
+from res_includes 
+where resorder=1;
 
+create view resorder2 AS 
+select * 
+from res_includes 
+where resorder=2;
+
+select * 
+from resorder1 i1 left join resorder2 i2 on i1.resid=i2.resid;
 
 
 
