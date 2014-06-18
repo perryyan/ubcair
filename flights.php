@@ -161,12 +161,12 @@ function printFlights($flights, $locations) {
 		}
 		else if (strcmp($_COOKIE['flightclass'], "business") == 0) {
 			$cost *= 3;
-			$fclassint = 1;
+			$fclassint = 3;
 		}
 		
 		else if (strcmp($_COOKIE['flightclass'], "first") == 0 ) {
 			$cost *= 5;
-			$fclassint = 2;
+			$fclassint = 5;
 		}
 		// update the cost if the class is changed
 		$flight['TOTALPRICE'] = $cost;  
