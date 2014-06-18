@@ -158,7 +158,7 @@ if ($db_conn) {
 			<input type="hidden" name="fid1" value="<?php echo $res['FIRSTID']; ?>"> 	
 			<input type="hidden" name="fid2" value="<?php echo $res['SECONDID']; ?>"> 	
 			<input type="hidden" name="fid3" value="<?php echo $res['THIRDID']; ?>"> 	
-			<input type="number" placeholder="Credit Card Number" name="credit" id="credit" required>											
+			<input type="text" placeholder="Credit Card Number" name="credit" id="credit" pattern="[0-9]{16}" required>											
 		    <button type="submit" name="makeres" class="pure-button pure-button-primary">Pay now</button>
 	    </form>
 </div></body> 
