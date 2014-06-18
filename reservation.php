@@ -91,12 +91,12 @@ if ($db_conn) {
 				
 		OCICommit($db_conn);		
 		
-		/*
+		
 		executePlainSQL("insert into deter_pay values("
 				.$_POST['makeres_payid'].","
 				.$_POST['makeres_resid'].","
 				.$_POST['makeres_totalcost'].")");
-		*/
+		
 		OCICommit($db_conn);
 		
 		// Confirmation dialog
