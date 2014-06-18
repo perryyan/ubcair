@@ -89,73 +89,13 @@
 <?php
 
 include('oci_functions.php');
+include 'pw.php';
+
 
 $success = True; 
-
-function printResult($result) { //prints results from a select statement
-	echo "<div class='content-customer-area'>";
-	echo "<br>Got data from table:<br>";
-	echo "<div class="."pure-table pure-table-bordered pure-table-striped"."><table>";
-	echo "<tr><th>cid</th>"
-		 ."<th>email</th>"
-		 ."<th>password</th>"
-		 ."<th>cname</th>"
-		 ."<th>passport_country</th>"
-		 ."<th>passport_num</th>"
-		 ."<th>phone#</th>"
-		 ."<th>address</th></tr>";
-
-	while ($row = OCI_Fetch_Array($result, OCI_BOTH)) {
-			echo "<tr><td>" . $row[0] . "</td><td>" 
-						. $row[1] . "</td><td>"
-						. $row[2] . "</td><td>"
-						. $row[3] . "</td><td>"
-						. $row[4] . "</td><td>"
-						. $row[5] . "</td><td>"
-						. $row[6] . "</td><td>"
-						. $row[7] . "</td></tr>"; //or just use "echo $row[0]" 
-	
-	}
-	echo "</table></div></div>";
-}
-
 // Connect Oracle...
 if ($db_conn) {
-
-
-	if (array_key_exists('reset', $_POST)) {
-		/*
-		// Drop old table...
-		echo "<br> dropping table <br>";
-		executePlainSQL("drop table Customer");
-		executePlainSQL("drop table UserInfo");
-		executePlainSQL("drop sequence cid_sequence");
-		
-		// Create user account table (Customers)
-		executePlainSQL(
-			"create table Customer(
-			cid number PRIMARY KEY,
-			email char(30) UNIQUE,
-			password char(16),
-			cname char(20),
-			passport_country char(3),
-			passport_num int,
-			phone# char(20),
-			address char(150))"
-			);
-			
-		// Create sequence
-		executePlainSQL("create sequence cid_sequence 
-						start with 0 
-						increment by 1 
-						minvalue 0
-						maxvalue 100000");
-
-						
-		OCICommit($db_conn);
-		*/
-
-	} else
+	
 		if (array_key_exists('insertsubmit', $_POST)) {
 			
 			// check if email is taken
@@ -172,11 +112,12 @@ if ($db_conn) {
 			}
 			else {
 				$success = 1;
+				
 				//Getting the values from user and insert data into the table
 				$tuple = array (
 					":bind1" => $_POST['cid'],
 					":bind2" => $_POST['email'],
-					":bind3" => $_POST['password'],
+					":bind3" => generate_hash($_POST['password']),
 					":bind4" => $_POST['cname'],
 					":bind5" => $_POST['passport_country'],
 					":bind6" => $_POST['passport_num'],
