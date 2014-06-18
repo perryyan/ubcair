@@ -50,7 +50,8 @@ create table Customer(
 	passport_country varchar2(3),
 	passport_num number(7,0),
 	phone varchar2(20),
-	address varchar2(150)
+	address varchar2(150),
+	is_admin number(1,0)
 	);		
 --alter table Customer
 --add constraint invalid_passport_num
