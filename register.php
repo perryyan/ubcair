@@ -35,9 +35,6 @@
         Welcome to UBC Air
     </h1>
 </div>
-<form method ="POST" action="admin.php">
-<button class="pure-button" name="Admin">Admin Page</button>
-</form>	
 <!--
 <form method="POST" action="register.php">
 <button class="pure-button" name="reset">Reset Database</button>
@@ -184,7 +181,8 @@ if ($db_conn) {
 					":bind5" => $_POST['passport_country'],
 					":bind6" => $_POST['passport_num'],
 					":bind7" => $_POST['phone#'],
-					":bind8" => $_POST['address']				
+					":bind8" => $_POST['address'],
+					":bind9" => 0				
 				);
 				$alltuples = array (
 					$tuple
@@ -198,7 +196,8 @@ if ($db_conn) {
 								:bind5,
 								:bind6,
 								:bind7,
-								:bind8
+								:bind8,
+								:bind9
 								)", $alltuples);
 								
 				OCICommit($db_conn);

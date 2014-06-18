@@ -49,6 +49,17 @@ include('oci_functions.php');
 
 echo "Welcome " . $_COOKIE["cname"] . "!<br>";
 
+if($db_conn) {
+	$q = "select is_admin from Customer where cid=".$_COOKIE['cid'];
+	$stmt = oci_parse($db_conn,$q);
+	$r = oci_execute($stmt, OCI_DEFAULT);
+	
+	$row = oci_fetch_array($stmt, OCI_BOTH);
+	if($row['IS_ADMIN'] == 1) {
+		echo "<a href='admin.php'>Administrative console</a><br>";		
+	}
+	OCILogoff($db_conn);
+}
 ?>
 
 <a href='profile.php'>Edit my profile</a><br>

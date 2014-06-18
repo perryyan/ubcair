@@ -20,33 +20,19 @@
 </form>
 
 <script>
-<!-- Check inputs in insert form -->
 	function validateInsert() {
 		var elements = document.forms["insertform"].elements;
 	    for (e in elements) {
 	    	if (elements[e].name == "tablename") break;
 	    	var validity = isValid(elements[e].name, elements[e].value);
-	    	if (!validity) return false;
+	    	if (validity !== true) {
+	    		alert("Invalid input to regex: " + validity);
+	    		return false;
+	    	}
 	    }
    		 return true;	
 	}
 	
-<!-- Check inputs in update form-->
-	function validateUpdate() {
-		var elements = document.forms["updateform"].elements;
-		var validity = isValid(elements["field2change"].value, elements["newvalue"].value);
-		var validity2 = isValid(elements["updatesearchby"].value, elements["searchedvalue"].value);	
-		if (!validity || !validity2) return false;
-		else return true;
-	}
-
-<!-- Check input in delete form -->
-	function validateDelete() {
-		var elements = document.forms["deleteform"].elements;
-		return isValid(elements["deletesearchby"].value, elements["searchedvalue"].value);	
-	}
-
-<!-- Helper, actually checks given input vs. attribute name, using regular expressions -->
 	function isValid(name, value) {
 		var pattern;
 		switch (name) {
@@ -76,10 +62,7 @@
 		case "ARRIVALTIME": pattern = /.+/; break;			
 		default: pattern = /^\w\w*\w$/;
 		}
-		if (!pattern.test(value)) {
-			alert("Invalid input, " + name + " has regex " + pattern);
-			return false;
-		}
+		if (!pattern.test(value)) return name + " " + pattern;
 		else return true; 
 	}
 </script>
@@ -92,6 +75,18 @@ $success = True; //keep track of errors so it redirects the page only if there a
 
 include "oci_functions.php"; 
 
+if($db_conn) {
+	$q = "select is_admin from Customer where cid=".$_COOKIE['cid'];
+	$stmt = oci_parse($db_conn,$q);
+	$r = oci_execute($stmt, OCI_DEFAULT);
+	
+	$row = oci_fetch_array($stmt, OCI_BOTH);
+	if($row['IS_ADMIN'] != 1) {
+		echo "You are not admin.<br>";
+		exit;
+	}
+	OCILogoff($db_conn);
+}
 // Same source as above, modified for generic table printing
 // Prints everything after table is selected
 function printResults($name, $cols, $data) {
@@ -145,7 +140,7 @@ function printInsertFields($table, $attributes) {
 
 // Prints the form to update table data
 function printUpdateFields($table, $attributes) {
-	$form = "<form method='POST' name ='updateform' action='admin.php' onsubmit='return validateUpdate()'><table>" 
+	$form = "<form method='POST' action='admin.php'><table>" 
 	. "<tr><td>Search row by: </td><td><select id='updatesearchby' name='updatesearchby'>"
 	. "<option selected value='default'>(Select Column)</option>";
 	for ($it=0; $it < count($attributes); $it++) {
@@ -168,7 +163,7 @@ function printUpdateFields($table, $attributes) {
 }
 // Prints the form to delete table data
 function printDeleteFields($table, $attributes) {
-	$form = "<form method='POST' name='deleteform' action='admin.php' onsubmit='return validateDelete()'><table>" 
+	$form = "<form method='POST' action='admin.php'><table>" 
 	. "<tr><td>Search row by: </td><td><select id='deletesearchby' name='deletesearchby'>"
 	. "<option selected value='default'>(Select Column)</option>";
 	for ($it=0; $it < count($attributes); $it++) {
