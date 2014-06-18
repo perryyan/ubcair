@@ -50,7 +50,8 @@ create table Customer(
 	passport_country varchar2(3),
 	passport_num number(7,0),
 	phone varchar2(20),
-	address varchar2(150)
+	address varchar2(150),
+	is_admin number(1,0)
 	);		
 --alter table Customer
 --add constraint invalid_passport_num
@@ -281,8 +282,9 @@ column fTime format a9
 
 -- other inserts samples
 --Customer(cid, email, password, cname, passport_contry, passport_num, phone, address)
-insert into Customer VALUES(0, 'shirley5001@hotmail.com', '1234', 'shirley', 'CN', '1234567', '7783212769', '1234567');
-insert into Customer VALUES(1, '418446548@qq.com', '1234', 'shirley', 'CN', '1234567', '7783212769', '1234567');
+insert into Customer VALUES(0, 'shirley5001@hotmail.com', '1234', 'shirley', 'CN', '1234567', '7783212769', '1234567', '0');
+insert into Customer VALUES(1, '418446548@qq.com', '1234', 'shirley', 'CN', '1234567', '7783212769', '1234567', '0');
+insert into Customer VALUES(2, 'admin@admin', '1234', 'Admin', 'CA', '1234567', '12345678', '1234567', '1');
 --make_res(resid, cid, pclass, ticket_num)
 insert into make_res VALUES(0, 0, 0, 1);
 insert into make_res VALUES(1, 0, 0, 1);
@@ -312,10 +314,10 @@ create VIEW Bag_num(cid, num_B) AS
 	from has_B h
 	group by h.cid;
 
-create VIEW Detail(cid, resid, tcost) AS
-	select cid, m.resid, (m.ticket_num*f.cost)+(m.pclass*100) AS tcost
-	from Flight f, res_includes r, make_res m
-	where m.resid = r.resid AND r.fid = f.fid;
+create VIEW Detail(cid, resid, pclass, ticket_num, fids, resorder, cost, tcost) AS
+ select m.cid, m.resid, m.pclass, m.ticket_num, r.fid, r.resorder, f.cost, (m.ticket_num*f.cost)+(m.pclass*100) AS tcost
+ from make_res m, res_includes r, Flight f
+ where m.resid = r.resid AND r.fid = f.fid;
 
 	
 -- do selection here

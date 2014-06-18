@@ -83,9 +83,9 @@ if($db_conn) {
 	$row = oci_fetch_array($stmt, OCI_BOTH);
 	if($row['IS_ADMIN'] != 1) {
 		echo "You are not admin.<br>";
-		exit;
+		OCILogoff($db_conn);
+		header("Location: index.php");
 	}
-	OCILogoff($db_conn);
 }
 // Same source as above, modified for generic table printing
 // Prints everything after table is selected
