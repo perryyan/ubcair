@@ -98,7 +98,7 @@ add constraint Flight_time_check
 check ((arrivalTime-departTime) <= interval '24' hour);
 	
 --now create tables for reservation	
--- class[economic = 0, business = 1, first = 2]
+-- class[economic = 1, business = 3, first = 5]
 -- make_res NOT in BCNF?
 -- cid->resid
 -- resid->pclass, ticket_num
@@ -112,6 +112,10 @@ create table make_res(
 alter table make_res
 add constraint ticket_num_not_0
 check (ticket_num <> 0);
+
+alter table make_res
+add constraint valid_class_id
+check (pclass = 1 OR pclass = 3 OR pclass = 5);
 	
 -- res_includes in BCNF
 -- (fid, resid)->resorder	
@@ -163,7 +167,7 @@ create table last_location(
 -- pid->creditcard
 create table payment(
 	payid number(9,0) PRIMARY KEY,
-	creditcard number(16,0),
+	creditcard varchar2(16),
 	cid number(9,0),
 	FOREIGN KEY (cid) references Customer(cid)
 	);
@@ -340,8 +344,8 @@ create VIEW Detail(cid, resid, pclass, ticket_num, fids, resorder, cost, tcost) 
 	
 -- do selection here
 --payment(payid, creditcard, cid)
-insert into payment VALUES(0, 23456789012, 0);
-insert into payment VALUES(1, 123465749281, 1);
+insert into payment VALUES(0, '1111222233334444', 0);
+insert into payment VALUES(1, '4444555566667777', 1);
 
 --deter_pay(payid, resid, total_cost)
 insert into deter_pay
@@ -392,28 +396,26 @@ from plane p2, flight f2
 where p2.pid = f2.pid
 group by p2.airline
 having avg(f2.cost) <= ALL (select avg(f.cost)
-from Plane p, flight f
-where p.pid = f.pid
-group by p.airline)
-;
+                            from Plane p, flight f
+                            where p.pid = f.pid
+                            group by p.airline);
 
-									 
-									 
-drop view resorder1 cascade constraints;
-drop view resorder2 cascade constraints;	
-	
-create view resorder1 AS 
-select * 
-from res_includes 
-where resorder=1;
 
-create view resorder2 AS 
-select * 
-from res_includes 
-where resorder=2;
 
-select * 
-from resorder1 i1 left join resorder2 i2 on i1.resid=i2.resid;
+select m.resid,fid1,fid2,fid3,pclass,ticket_num,creditcard,total_cost 
+from deter_pay d, payment p,make_res m, (select i1.resid, i1.fid as fid1,fid2,fid3 
+								         from 
+										(select * from res_includes where resorder=1) i1 
+										           left join 
+										(select i2.fid as fid2, i3.fid as fid3,i2.resid 
+										           from (select * from res_includes where resorder=2) i2 
+								                         left join 
+										                (select * from res_includes where resorder=3) i3 
+								                         on i2.resid=i3.resid) i4
+							   	   on i1.resid=i4.resid) f 
+where m.resid=f.resid AND d.resid=m.resid AND p.payid=d.payid AND m.cid= 1
+order by m.resid;
+
 
 
 
