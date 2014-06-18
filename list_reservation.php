@@ -22,7 +22,7 @@ function parseClass($class) {
 }
 
 function parseCard($cardNumber) {
-	return substr($cardNumber, 0,1) . str_repeat("*",7) . substr($cardNumber, 7,3);
+	return substr($cardNumber, 0,3) . str_repeat("*",9) . substr($cardNumber, 12,4);
 }
 function printHistory($history) {	 
 	echo "<table border='1'>";
@@ -33,8 +33,8 @@ function printHistory($history) {
 	$it = 0;
 	while ($tuple = OCI_Fetch_Array($history, OCI_ASSOC)) {
 		$numFlights=1;
-		if (array_key_exists("FID3", $tuple)) $numflights=3;
-		else if (array_key_exists("FID2", $tuple)) $numFlights=2;
+		if (array_key_exists("FID3", $tuple)) $numFlights=3;
+		else if (array_key_exists("FID2", $tuple) && (array_key_exists("FID3", $tuple) != TRUE)) $numFlights=2;
 		$details = getDetails($tuple,$numFlights);
 		echo "<tr><td>".$tuple['RESID']."</td><td>".$details['DEPARTDATE']."</td><td>"
 			.$details['DEPARTCITY']."</td><td>".$details['DEPARTCOUNTRY']."</td><td>"
@@ -43,8 +43,8 @@ function printHistory($history) {
 			.parseCard($tuple['CREDITCARD'])."</td><td>".$tuple['TOTAL_COST']."</td></tr>";
 		echo "<tr><td>";
 		$flight = Array("FIRSTID" => $tuple['FID1']);
-		if ($numFlight >= 2) $flight["SECONDID"] = $tuple['FID2'];
-		if ($numFlight == 3) $flight["THIRDID"] = $tuple['FID3'];
+		if ($numFlights >= 2) $flight["SECONDID"] = $tuple['FID2'];
+		if ($numFlights == 3) $flight["THIRDID"] = $tuple['FID3'];
 		printDetails($flight, $it, 1);
 		echo "</td></tr>";
 		$it++;	 
@@ -57,7 +57,7 @@ function getDetails($bigTuple,$numFlights) {
 	$departFlight = oci_fetch_assoc(executePlainSQL("select * from Flight where fid='$fid1'"));
 	$departDate = parseDate($departFlight['DEPARTTIME'],1);
 	$departApCode = $departFlight['DEPARTAP'];
-	$departAp = oci_fetch_assoc(executePlainSQL("select * from Airport where code='$departApCode'"));
+	$departAp = oci_fetch_assoc(executePlainSQL("select CITY, COUNTRY from Airport where code='$departApCode'"));
 	$departCity = $departAp['CITY'];
 	$departCountry = $departAp['COUNTRY'];
 	if ($numFlights == 1) $arrivalFlight = $departFlight;
