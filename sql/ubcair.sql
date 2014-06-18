@@ -35,7 +35,35 @@ drop table last_location cascade constraints;
 drop table payment cascade constraints;
 drop table deter_pay cascade constraints;
 
+-- create sequence
+drop sequence cid_sequence;
+drop sequence resid_sequence;
+drop sequence bid_sequence;
+drop sequence payid_sequence;
 
+create sequence cid_sequence 
+start with 1 
+increment by 1 
+minvalue 0
+maxvalue 100000;
+
+create sequence resid_sequence 
+start with 0 
+increment by 1 
+minvalue 0
+maxvalue 100000;
+
+create sequence bid_sequence 
+start with 0 
+increment by 1 
+minvalue 0
+maxvalue 100000;
+
+create sequence payid_sequence 
+start with 0 
+increment by 1 
+minvalue 0
+maxvalue 100000;
 
 
 --
@@ -55,7 +83,8 @@ create table Customer(
 	phone varchar2(20),
 	address varchar2(150),
 	is_admin number(1,0)
-	);		
+	);	
+	
 	
 -- Airport in BCNF	
 -- code->apname, city, country
@@ -111,7 +140,7 @@ create table make_res(
 	);
 alter table make_res
 add constraint ticket_num_not_0
-check (ticket_num <> 0);
+check (ticket_num > 0);
 
 alter table make_res
 add constraint valid_class_id
@@ -298,33 +327,34 @@ column fTime format a9
 
 -- other inserts samples
 --Customer(cid, email, password, cname, passport_contry, passport_num, phone, address)
-insert into Customer VALUES(0, 'shirley5001@hotmail.com', '1234', 'shirley', 'CN', '1234567', '7783212769', '1234567', '0');
-insert into Customer VALUES(1, '418446548@qq.com', '1234', 'shirley', 'CN', '1234567', '7783212769', '1234567', '0');
-insert into Customer VALUES(2, 'admin@admin', '1234', 'Admin', 'CA', '1234567', '12345678', '1234567', '1');
+insert into Customer VALUES(0, 'admin@admin', '1234', 'Admin', 'CA', '1234567', '12345678', '1234567', '1');
+insert into Customer VALUES(cid_sequence.nextval, 'shirley5001@hotmail.com', '1234', 'shirley', 'CN', '1234567', '7783212769', '1234567', '0');
+insert into Customer VALUES(cid_sequence.nextval, '418446548@qq.com', '1234', 'shirley', 'CN', '1234567', '7783212769', '1234567', '0');
+
 --make_res(resid, cid, pclass, ticket_num)
-insert into make_res VALUES(0, 0, 1, 1);
-insert into make_res VALUES(1, 0, 1, 1);
-insert into make_res VALUES(2, 1, 1, 2);
-insert into make_res VALUES(3, 1, 3, 1);
-insert into make_res VALUES(4, 1, 1, 1);
--- insert into make_res VALUES(5, 1, 1, 1);
+insert into make_res VALUES(resid_sequence.nextval, 1, 1, 1);
+insert into make_res VALUES(resid_sequence.nextval, 1, 1, 1);
+insert into make_res VALUES(resid_sequence.nextval, 2, 1, 2);
+insert into make_res VALUES(resid_sequence.nextval, 2, 3, 1);
+insert into make_res VALUES(resid_sequence.nextval, 2, 1, 1);
+-- insert into make_res VALUES(5, 2, 1, 1);
 --res_includes(fid, resid, resorder)
-insert into res_includes VALUES('10000', 0, 1);
 insert into res_includes VALUES('10000', 1, 1);
-insert into res_includes VALUES('10004', 2, 1);
-insert into res_includes VALUES('10023', 2, 2);
-insert into res_includes VALUES('10030', 3, 1);
+insert into res_includes VALUES('10000', 2, 1);
+insert into res_includes VALUES('10004', 3, 1);
+insert into res_includes VALUES('10023', 3, 2);
 insert into res_includes VALUES('10030', 4, 1);
-insert into res_includes VALUES('10011', 4, 2);
-insert into res_includes VALUES('10023', 4, 3);
--- insert into res_includes VALUES('10000', 5, 1);
+insert into res_includes VALUES('10030', 5, 1);
+insert into res_includes VALUES('10011', 5, 2);
+insert into res_includes VALUES('10023', 5, 3);
+-- insert into res_includes VALUES('10000', 6, 1);
 
 --has_B(bid, cid, status, weight_kg)
-insert into has_B VALUES(0, 0, 3, 36.20);
-insert into has_B VALUES(1, 0, 3, 28.00);
---last_location(bid, code)
-insert into last_location VALUES(0, 'YVR');
+insert into has_B VALUES(bid_sequence.nextval, 1, 3, 36.20);
+insert into has_B VALUES(bid_sequence.nextval, 1, 3, 28.00);
+--laststart_location(bid, code)
 insert into last_location VALUES(1, 'YVR');
+insert into last_location VALUES(2, 'YVR');
 
 -- more views
 drop view Bag_num cascade constraints;
@@ -344,8 +374,8 @@ create VIEW Detail(cid, resid, pclass, ticket_num, fids, resorder, cost, tcost) 
 	
 -- do selection here
 --payment(payid, creditcard, cid)
-insert into payment VALUES(0, '1111222233334444', 0);
-insert into payment VALUES(1, '4444555566667777', 1);
+insert into payment VALUES(payid_sequence.nextval, '1111222233334444', 1);
+insert into payment VALUES(payid_sequence.nextval, '4444555566667777', 2);
 
 --deter_pay(payid, resid, total_cost)
 insert into deter_pay
@@ -413,7 +443,7 @@ from deter_pay d, payment p,make_res m, (select i1.resid, i1.fid as fid1,fid2,fi
 										                (select * from res_includes where resorder=3) i3 
 								                         on i2.resid=i3.resid) i4
 							   	   on i1.resid=i4.resid) f 
-where m.resid=f.resid AND d.resid=m.resid AND p.payid=d.payid AND m.cid= 1
+where m.resid=f.resid AND d.resid=m.resid AND p.payid=d.payid AND m.cid= 2
 order by m.resid;
 
 
