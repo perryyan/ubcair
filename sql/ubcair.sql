@@ -78,7 +78,7 @@ create table Customer(
 	address varchar2(150),
 	is_admin number(1,0)
 	);	
-	
+column address format a15
 	
 -- Airport in BCNF	
 -- code->apname, city, country
@@ -122,7 +122,7 @@ check ((arrivalTime-departTime) <= interval '24' hour);
 	
 --now create tables for reservation	
 -- class[economic = 1, business = 3, first = 5]
--- make_res NOT in BCNF?
+-- make_res in BCNF
 -- resid->cid, pclass, ticket_num
 create table make_res(
 	resid number(9,0) PRIMARY KEY,
@@ -156,8 +156,8 @@ check (resorder >= 1 AND resorder <= 3);
 	
 --now create tables for bags
 -- status[in transit=0, lost=1, picked up=2, checked in=3]	
--- has_B NOT in BCNF?
--- bid->cid, status, weight_kg
+-- has_B in BCNF
+-- bid->cid, status, weight_kg, Last_Update
 create table has_B(
 	bid number(9,0) primary key,
 	cid number(9,0) NOT NULL,
@@ -185,7 +185,7 @@ create table last_location(
 	
 --now create tables for payment
 -- so cid is not unique anymore
--- payment in BCNF???
+-- payment in BCNF
 -- payid->cid, creditcard
 create table payment(
 	payid number(9,0) PRIMARY KEY,
