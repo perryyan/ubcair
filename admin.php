@@ -75,6 +75,7 @@
 		case "COUNTRY":
 		case "PASSPORT_COUNTRY": pattern = /^[a-zA-Z][a-zA-Z]$/; break;
 		case "DEPARTTIME":
+		case "LAST_UPDATE":
 		case "ARRIVALTIME": pattern = /.+/; break;			
 		default: pattern = /^\w\w*\w$/;
 		}
@@ -135,7 +136,7 @@ function printTable($attributes, $data) {
 function printInsertFields($table, $attributes) {
 	$form = "<form method='POST' name='insertform' action='admin.php' onsubmit='return validateInsert()'><table>";
 	for ($it=0; $it < count($attributes); $it++) {
-		if (strcmp($attributes[$it],"DEPARTTIME") == 0 || strcmp($attributes[$it],"ARRIVALTIME") == 0) $type = "datetime-local";
+		if (strcmp($attributes[$it],"DEPARTTIME") == 0 || strcmp($attributes[$it],"ARRIVALTIME") == 0 || strcmp($attributes[$it],"LAST_UPDATE") == 0) $type = "datetime-local";
 		else $type = "text";
 		$form = $form . "<tr><td>" . $attributes[$it] . ":</td><td><input type='$type' name = '$attributes[$it]' required></td></tr>";		
 	} 
