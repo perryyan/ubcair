@@ -129,7 +129,7 @@ create table make_res(
 	cid number(9,0) NOT NULL,
 	pclass number(1,0),
 	ticket_num number(1,0),
-	FOREIGN KEY (cid) references Customer(cid)
+	FOREIGN KEY (cid) references Customer(cid) ON DELETE CASCADE
 	);
 alter table make_res
 add constraint ticket_num_not_0
@@ -146,8 +146,8 @@ create table res_includes(
 	resid number(9,0),
 	resorder number(7,0),
 	PRIMARY KEY (fid, resid),
-	FOREIGN KEY (fid) references Flight(fid),
-	FOREIGN KEY (resid) references make_res(resid)
+	FOREIGN KEY (fid) references Flight(fid) ON DELETE CASCADE,
+	FOREIGN KEY (resid) references make_res(resid) ON DELETE CASCADE
 	);
 alter table res_includes
 add constraint resorder_inbetween_1_and_3
@@ -164,7 +164,7 @@ create table has_B(
 	status number(1,0),
 	weight_kg decimal(6,2),
 	last_Update TIMESTAMP,
-	FOREIGN KEY (cid) references Customer(cid)
+	FOREIGN KEY (cid) references Customer(cid) ON DELETE CASCADE
 	);
 alter table has_B
 add constraint invalid_status
@@ -177,8 +177,8 @@ column last_Update format a9
 create table last_location(
 	bid number(9,0) PRIMARY KEY,
 	code varchar2(4) NOT NULL,
-	FOREIGN KEY (code) references Airport(code),
-	FOREIGN KEY (bid) references has_B(bid)
+	FOREIGN KEY (code) references Airport(code) ON DELETE CASCADE,
+	FOREIGN KEY (bid) references has_B(bid) ON DELETE CASCADE
 	);
 	
 
@@ -191,7 +191,7 @@ create table payment(
 	payid number(9,0) PRIMARY KEY,
 	creditcard varchar2(16),
 	cid number(9,0),
-	FOREIGN KEY (cid) references Customer(cid)
+	FOREIGN KEY (cid) references Customer(cid) ON DELETE CASCADE
 	);
 	
 -- deter_pay in BCNF
@@ -200,8 +200,8 @@ create table deter_pay(
 	payid number(9,0),
 	resid number(9,0) PRIMARY KEY,
 	total_cost decimal(10,2),
-	FOREIGN KEY (payid) references payment(payid),
-	FOREIGN KEY (resid) references make_res(resid)
+	FOREIGN KEY (payid) references payment(payid) ON DELETE CASCADE,
+	FOREIGN KEY (resid) references make_res(resid) ON DELETE CASCADE
 	);
 
 
