@@ -62,8 +62,8 @@ if ($db_conn) {
 		
 		// Insert reservation tuple into make_res
 		// (resid, cid, pclass, ticket_num) 
-		executePlainSQL("insert into make_res values ("
-						.$_POST['makeres_resid'].","
+		executePlainSQL("insert into make_res values (
+						resid_sequence.nextval,"
 						.$_COOKIE['cid'].","
 						.$_POST['makeres_classint'].","
 						.$_POST['makeres_numtickets'].")");
@@ -76,25 +76,25 @@ if ($db_conn) {
 			//echo $fids[$key]."<br>";
 			if( $fids[$key] != "") {
 				executePlainSQL("insert into res_includes values ("
-					.$value.","
-					.$_POST['makeres_resid'].","
+					.$value.",
+					resid_sequence.currval,"
 					.number_format($key+1).")");
 			}
 		}
 
 		OCICommit($db_conn);
 		
-		executePlainSQL("insert into payment values("
-				.$_POST['makeres_payid'].","
+		executePlainSQL("insert into payment values(
+				payid_sequence.nextval,"
 				.$_POST['credit'].","
 				.$_COOKIE['cid'].")");	
 				
 		OCICommit($db_conn);		
 		
 		
-		executePlainSQL("insert into deter_pay values("
-				.$_POST['makeres_payid'].","
-				.$_POST['makeres_resid'].","
+		executePlainSQL("insert into deter_pay values(
+				payid_sequence.currval,
+				resid_sequence.currval,"
 				.$_POST['makeres_totalcost'].")");
 		
 		OCICommit($db_conn);
@@ -102,8 +102,8 @@ if ($db_conn) {
 		// Confirmation dialog
 		?>
 		<script type="text/javascript"> 
-			alert("Payment successful.");
-			location = "support.php";
+			alert("Payment successful. Proceed to adding bags");
+			location = "baggage.php";
 		</script>
 		<?php
 	}

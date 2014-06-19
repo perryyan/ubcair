@@ -53,7 +53,6 @@ Please select the number of baggages:
 <input type="number" id="numbaggages" name="numbaggages" min="0" max="3" value="0">
 <br>
 <button type="submit" class="pure-button pure-button-primary" name="insertsubmit">Submit number of baggage(s)</button>
-<button name="reset">Reset</button>
 </form>
 
 
@@ -115,7 +114,7 @@ if ($db_conn) {
 				("
 					insert into has_B values 
 							(
-								".rand(0,999999).",		
+								bid_sequence.nextval,		
 								".$_COOKIE['cid'].",	
 								3,
 								".$_POST['weight'.$i].",
