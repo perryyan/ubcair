@@ -1,12 +1,6 @@
 --
 -- 	Database Table Creation
 --
---		This file will create the tables for use with the book 
---  Database Management Systems by Raghu Ramakrishnan and Johannes Gehrke.
---  It is run automatically by the installation script.
---
---	Version 0.1.0.0 2002/04/05 by: David Warden.
---	Copyright (C) 2002 McGraw-Hill Companies Inc. All Rights Reserved.
 
 -- Set the datetime datatype
 -- format: 2014-09-01 15:05
@@ -15,7 +9,7 @@ set pagesize 1000
 set linesize 32767
 set space 3
 
--- set the current date?
+-- get the current date
 select sysdate from dual;
 --
 --  First drop any existing tables. Any errors are ignored.
@@ -72,7 +66,7 @@ maxvalue 100000;
 -- Customer is not in BCNF
 -- cid->email, cname, passport_country, passport_num, phone, address
 -- email->password
--- email->cname, passport_country, passport_num, phone, address
+-- email->cid cname, passport_country, passport_num, phone, address
 create table Customer(
 	cid number(9,0) PRIMARY KEY,
 	email varchar2(30) UNIQUE,
@@ -129,8 +123,7 @@ check ((arrivalTime-departTime) <= interval '24' hour);
 --now create tables for reservation	
 -- class[economic = 1, business = 3, first = 5]
 -- make_res NOT in BCNF?
--- cid->resid
--- resid->pclass, ticket_num
+-- resid->cid, pclass, ticket_num
 create table make_res(
 	resid number(9,0) PRIMARY KEY,
 	cid number(9,0) NOT NULL,
@@ -164,19 +157,20 @@ check (resorder >= 1 AND resorder <= 3);
 --now create tables for bags
 -- status[in transit=0, lost=1, picked up=2, checked in=3]	
 -- has_B NOT in BCNF?
--- cid->bid
--- bid->status, weight_kg
+-- bid->cid, status, weight_kg
 create table has_B(
 	bid number(9,0) primary key,
 	cid number(9,0) NOT NULL,
 	status number(1,0),
 	weight_kg decimal(6,2),
-	--code varchar2(4),
+	last_Update TIMESTAMP,
 	FOREIGN KEY (cid) references Customer(cid)
 	);
 alter table has_B
 add constraint invalid_status
 check (status >= 0 AND status <= 3);
+
+column last_Update format a9
 
 -- last_location in BCNF
 -- bid->code
@@ -192,8 +186,7 @@ create table last_location(
 --now create tables for payment
 -- so cid is not unique anymore
 -- payment in BCNF???
--- cid->pid
--- pid->creditcard
+-- payid->cid, creditcard
 create table payment(
 	payid number(9,0) PRIMARY KEY,
 	creditcard varchar2(16),
@@ -215,8 +208,7 @@ create table deter_pay(
 
 --
 -- done adding all of the tables, now add in some tuples
---  first, add in the Customers, Airports, Planes, and Flights
--- Customers
+--  first, add in the Airports, Planes, and Flights
 
 -- Airports
 insert into Airport VALUES ('YVR', 'Vancouver International Airport', 'Vancouver', 'CA');
@@ -283,13 +275,14 @@ drop view trans2 cascade constraints;
 drop view trans3 cascade constraints;
 drop view allFlight cascade constraints;
 
-
+-- flight that has 0 transfer
 CREATE VIEW trans1(fid, dt1, depart, arrival, totalTime, totalprice) AS
 	select f1.fid, f1.departTime, f1.departAP, f1.arrivalAP, (f1.arrivalTime-f1.departTime) AS totalTime, f1.cost
 	from Flight f1;
 column dt1 format a9
 column totalTime format a9
 
+-- flights that has 1 transfer
 CREATE VIEW trans2(firstid, secondid, dt1, depart, dt2, midd, arrival, totalTime, totalprice) AS
 	select f1.fid, f2.fid, f1.departTime, f1.departAP, f2.departTime, f2.departAP, f2.arrivalAP, (f1.arrivalTime-f1.departTime)+(f2.arrivalTime-f2.departTime) AS totalTime, f1.cost+f2.cost AS totalprice
 	from Flight f1, Flight f2
@@ -298,6 +291,7 @@ column dt1 format a9
 column dt2 format a9
 column totalTime format a9	
 
+-- flights that has 2 transfers
 CREATE VIEW trans3(firstid, secondid, thirdid, dt1, depart, dt2, mid1, dt3, mid2, arrival, totalTime, totalprice) AS
 	select f1.fid, f2.fid, f3.fid, f1.departTime, f1.departAP, f2.departTime, f2.departAP, f3.departTime, f3.departAP, f3.arrivalAP, (f1.arrivalTime-f1.departTime)+(f2.arrivalTime-f2.departTime)+(f3.arrivalTime-f3.departTime) AS totalTime, f1.cost+f2.cost+f3.cost AS totalprice
 	from Flight f1, Flight f2, Flight f3
@@ -307,6 +301,7 @@ column dt2 format a9
 column dt3 format a9
 column totalTime format a9
 
+-- informations of all flight
 CREATE VIEW allFlight(firstid, secondid, thirdid, dt1, depart, dt2, mid1, dt3, mid2, arrival, totalTime, totalprice) AS
 	select t1.fid, NULL AS secondid, NULL AS thirdid, t1.dt1, t1.depart, NULL AS dt2, NULL AS mid1, NULL AS dt3, NULL AS mid2, t1.arrival, t1.totalTime, t1.totalprice
 	from trans1 t1
@@ -323,7 +318,6 @@ CREATE VIEW Flight_time(fTime, depart, departCity, departCo, arrival, arrivalCit
 	where f.depart = a1.code AND f.arrival = a2.code;
 column fTime format a9	
 
--- query
 
 -- other inserts samples
 --Customer(cid, email, password, cname, passport_contry, passport_num, phone, address)
@@ -350,29 +344,32 @@ insert into res_includes VALUES('10023', 5, 3);
 -- insert into res_includes VALUES('10000', 6, 1);
 
 --has_B(bid, cid, status, weight_kg)
-insert into has_B VALUES(bid_sequence.nextval, 1, 3, 36.20);
-insert into has_B VALUES(bid_sequence.nextval, 1, 3, 28.00);
+insert into has_B VALUES(bid_sequence.nextval, 1, 3, 36.20, '2014-08-31 12:00');
+insert into has_B VALUES(bid_sequence.nextval, 1, 3, 28.00, '2014-08-31 12:00');
 --laststart_location(bid, code)
 insert into last_location VALUES(1, 'YVR');
 insert into last_location VALUES(2, 'YVR');
 
+--
 -- more views
+--
 drop view Bag_num cascade constraints;
 drop view Detail cascade constraints;
-drop view Final_pay cascade constraints;
 
+-- counting the num of bags
 create VIEW Bag_num(cid, num_B) AS
 	select h.cid, COUNT(bid)
 	from has_B h
 	group by h.cid;
 
+-- detail view of reservation for each customer
 create VIEW Detail(cid, resid, pclass, ticket_num, fids, resorder, cost, tcost) AS
 	select m.cid, m.resid, m.pclass, m.ticket_num, r.fid, r.resorder, f.cost, (m.ticket_num*f.cost)*m.pclass AS tcost
 	from make_res m, res_includes r, Flight f
 	where m.resid = r.resid AND r.fid = f.fid;
 
 	
--- do selection here
+-- inserting into payment and deter_pay, insertion for deter_pay is different from the front end
 --payment(payid, creditcard, cid)
 insert into payment VALUES(payid_sequence.nextval, '1111222233334444', 1);
 insert into payment VALUES(payid_sequence.nextval, '4444555566667777', 2);
@@ -385,17 +382,17 @@ where p.cid = d.cid
 group by p.payid, d.resid;
 
 --query on final cost
+drop view Final_pay cascade constraints;
+
 create view Final_pay(payid, price) AS
 	select payid, SUM(total_cost)
 	from deter_pay
 	group by payid;
 
 	
--- more queries
+-- other major queries used in front end
 -- nested aggregation
 -- find the company that has more then one plane and find times used of those plane and the average cost of their flights
---Plane(pid, plane_model, airline, currAP)
---Flight(fid, departAP, arrivalAP, arrivalTime, pid, cost)
 
 select p2.airline, p2.pid, count(f.fid) AS f_num, AVG(f.cost)
 from flight f, plane p2
@@ -407,7 +404,7 @@ group by p2.airline, p2.pid
 order by p2.airline;
 
 -- division
--- find the reservation ID that used both fid 10030 and 10011, then 10004 and 10023
+-- find the reservation ID that used both fid 10030 and 10011, then 10004 and 10023 (for example)
 select r.resid
 from res_includes r
 where r.fid = '10030' AND r.resid IN (select r2.resid
@@ -420,8 +417,8 @@ where r.fid = '10004' AND r.resid IN (select r2.resid
                                      from res_includes r2
                                      where r2.fid = '10023');
 									 
-									 
-select p2.airline, count(f2.fid) AS flight_num, avg(f2.cost) AS avgCost
+-- find the airline that has the cheapest cost on average									 
+select p2.airline AS Cheapest_airline, count(f2.fid) AS flight_num, avg(f2.cost) AS avgCost
 from plane p2, flight f2
 where p2.pid = f2.pid
 group by p2.airline
@@ -429,24 +426,29 @@ having avg(f2.cost) <= ALL (select avg(f.cost)
                             from Plane p, flight f
                             where p.pid = f.pid
                             group by p.airline);
+							
+-- find the airline that has the most expensive cost on average									 
+select p2.airline AS Most_Expensive_airline, count(f2.fid) AS flight_num, avg(f2.cost) AS avgCost
+from plane p2, flight f2
+where p2.pid = f2.pid
+group by p2.airline
+having avg(f2.cost) >= ALL (select avg(f.cost)
+                            from Plane p, flight f
+                            where p.pid = f.pid
+                            group by p.airline);
 
 
-
+-- find the reservation detail for cid = 1
 select m.resid,fid1,fid2,fid3,pclass,ticket_num,creditcard,total_cost 
 from deter_pay d, payment p,make_res m, (select i1.resid, i1.fid as fid1,fid2,fid3 
-								         from 
-										(select * from res_includes where resorder=1) i1 
-										           left join 
-										(select i2.fid as fid2, i3.fid as fid3,i2.resid 
-										           from (select * from res_includes where resorder=2) i2 
-								                         left join 
-										                (select * from res_includes where resorder=3) i3 
-								                         on i2.resid=i3.resid) i4
-							   	   on i1.resid=i4.resid) f 
-where m.resid=f.resid AND d.resid=m.resid AND p.payid=d.payid AND m.cid= 2
+								         from (select * from res_includes where resorder=1) i1 
+										                     left join 
+										      (select i2.fid as fid2, i3.fid as fid3,i2.resid 
+										       from (select * from res_includes where resorder=2) i2 
+								                              left join 
+										            (select * from res_includes where resorder=3) i3 on i2.resid=i3.resid) i4 on i1.resid=i4.resid) f 
+where m.resid=f.resid AND d.resid=m.resid AND p.payid=d.payid AND m.cid= 1
 order by m.resid;
-
-
 
 
 
