@@ -64,6 +64,8 @@ if($db_conn) {
 
 <a href='profile.php'>Edit my profile</a><br>
 <a href='list_reservation.php'>My reservations</a><br>
+<a href='list_baggage.php'>My baggage</a><br>
+
 <a href='statistics.php'>Statistics of the site</a>
 
 </div>
