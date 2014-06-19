@@ -71,7 +71,7 @@ function parseStatus($code) {
 
 if($db_conn) {
 		
-		$q = "select bid, status, last_update from has_B where cid = '".$_COOKIE['cid']."'";	
+		$q = "select bid, status, weight_kg, last_update from has_B where cid = '".$_COOKIE['cid']."'";	
 		$options = executePlainSQL($q);
 
 		echo "<table class='pure-table pure-table-bordered'>
@@ -79,6 +79,7 @@ if($db_conn) {
 				<thead>
 				<td>bid</td>
 				<td>status</td>
+				<td>weight_kg</td>
 				<td>last_update</td>
 				</thead>
 			</tr>";
@@ -88,6 +89,7 @@ if($db_conn) {
 					"<td>".$row[0]."</td>".
 				  	"<td>".parseStatus($row[1])."</td>".
 				  	"<td>".$row[2]."</td>".
+				  	"<td>".$row[3]."</td>".
 				  "</tr>";
 		}
 		echo "</table>";
