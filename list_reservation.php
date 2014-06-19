@@ -16,9 +16,9 @@ include "oci_functions.php";
 $success = True; //keep track of errors so it redirects the page only if there are no errors
 
 function parseClass($class) {
-	if (strcmp($class,"0") == 0) return "Economy";
-	if (strcmp($class,"1") == 0) return "Business";
-	if (strcmp($class,"2") == 0) return "First Class";	
+	if (strcmp($class,"1") == 0) return "Economy";
+	if (strcmp($class,"3") == 0) return "Business";
+	if (strcmp($class,"5") == 0) return "First Class";	
 }
 
 function parseCard($cardNumber) {
