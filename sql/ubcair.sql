@@ -346,7 +346,7 @@ insert into res_includes VALUES('10023', 5, 3);
 --has_B(bid, cid, status, weight_kg)
 insert into has_B VALUES(bid_sequence.nextval, 1, 3, 36.20, '2014-08-31 12:00');
 insert into has_B VALUES(bid_sequence.nextval, 1, 3, 28.00, '2014-08-31 12:00');
---laststart_location(bid, code)
+--last_location(bid, code) // insertion based on the reservation(where the departAP is, using cookie)
 insert into last_location VALUES(1, 'YVR');
 insert into last_location VALUES(2, 'YVR');
 
@@ -438,7 +438,7 @@ having avg(f2.cost) >= ALL (select avg(f.cost)
                             group by p.airline);
 
 
--- find the reservation detail for cid = 1
+-- find the reservation detail for cid = 2
 select m.resid,fid1,fid2,fid3,pclass,ticket_num,creditcard,total_cost 
 from deter_pay d, payment p,make_res m, (select i1.resid, i1.fid as fid1,fid2,fid3 
 								         from (select * from res_includes where resorder=1) i1 
@@ -447,7 +447,7 @@ from deter_pay d, payment p,make_res m, (select i1.resid, i1.fid as fid1,fid2,fi
 										       from (select * from res_includes where resorder=2) i2 
 								                              left join 
 										            (select * from res_includes where resorder=3) i3 on i2.resid=i3.resid) i4 on i1.resid=i4.resid) f 
-where m.resid=f.resid AND d.resid=m.resid AND p.payid=d.payid AND m.cid= 1
+where m.resid=f.resid AND d.resid=m.resid AND p.payid=d.payid AND m.cid= 2
 order by m.resid;
 
 
