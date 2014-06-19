@@ -35,6 +35,17 @@ You are now logged out. Please wait while we redirect you to the home page.
 		setcookie('loggedin', null, 1);		
 		setcookie('cid', null, 1);
 		setcookie('cname', null, 1);
+		setcookie('depcountry', null, 1);
+		setcookie('descountry', null, 1);
+		setcookie('depcity', null, 1);
+		setcookie('descity', null, 1);
+		setcookie('flightclass', null, 1);	
+		setcookie('flightdate', null, 1);
+		setcookie('numtickets', null, 1);		
+		setcookie('numbaggages', null, 1);		
+		setcookie('deletesearchby', null, 1);		
+		setcookie('tabchoice', null, 1);		
+		setcookie('maximumtrans', null, 1);								
 		// Redirect to index
 		header('Refresh: 3; index.php');	
 		

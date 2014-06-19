@@ -157,7 +157,7 @@ function printFlights($flights, $locations) {
 		// Variable costs depends on class
 		if(strcmp($_COOKIE['flightclass'], "economy") == 0 ) {
 			$cost *= 1;
-			$fclassint = 0;			
+			$fclassint = 1;			
 		}
 		else if (strcmp($_COOKIE['flightclass'], "business") == 0) {
 			$cost *= 3;
@@ -185,7 +185,7 @@ function printFlights($flights, $locations) {
 		echo "</td></tr>";
 		$it++;
 	}		
-	echo "</table></div>";
+	echo "</table>";
 	echo "<input type='submit' value='Book my flight'></form>";
 }
 
@@ -330,4 +330,5 @@ if ($db_conn) {
 	}
 }
 ?>
+</div>
 </body>
