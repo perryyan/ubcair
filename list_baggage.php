@@ -71,9 +71,13 @@ function parseStatus($code) {
 
 if($db_conn) {
 		
-		$q = "select bid, status, weight_kg, last_update from has_B where cid = '".$_COOKIE['cid']."'";	
+		$q = "select h.bid, h.status, h.weight_kg, h.last_update, l.code 
+				from has_B h, last_location l
+				 where cid = '".$_COOKIE['cid']."' and h.bid = l.bid";	
 		$options = executePlainSQL($q);
-
+		
+		$bids = Array();
+		
 		echo "<table class='pure-table pure-table-bordered'>
 			<tr>
 				<thead>
@@ -81,15 +85,18 @@ if($db_conn) {
 				<td>status</td>
 				<td>weight_kg</td>
 				<td>last_update</td>
+				<td>last ap</td>
 				</thead>
 			</tr>";
 		
 		while($row = oci_fetch_array($options, OCI_BOTH)) {
+
 			echo "<tr>".
 					"<td>".$row[0]."</td>".
 				  	"<td>".parseStatus($row[1])."</td>".
 				  	"<td>".$row[2]."</td>".
 				  	"<td>".$row[3]."</td>".
+				  	"<td>".$row[4]."</td>".
 				  "</tr>";
 		}
 		echo "</table>";

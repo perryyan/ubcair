@@ -122,6 +122,14 @@ if ($db_conn) {
 				");
 				OCICommit($db_conn);
 				
+				// Last location
+				executePlainSQL("insert into last_location 
+					select bid_sequence.currval as bid, a.code
+					from Airport a
+					where a.city = '".$_COOKIE['depcity']."' and a.country = '".$_COOKIE['depcountry']."'");
+
+				OCICommit($db_conn);
+				
 				//delete cookie
 				setcookie('numbaggages', null, 0);
 				?>
