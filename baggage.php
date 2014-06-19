@@ -50,9 +50,9 @@
 
 <form action ="baggage.php" method = "POST">
 Please select the number of baggages:
-<input type="number" id="numbaggages" name="numbaggages" min="0" max="3" value="0">
+<input type="number" id="numbaggages" name="numbaggages" min="0" max="3" value="0" onchange="this.form.submit()" required>
 <br>
-<button type="submit" class="pure-button pure-button-primary" name="insertsubmit">Submit number of baggage(s)</button>
+<!--<button type="submit" name="insertsubmit">Submit number of baggage(s)</button> !-->
 </form>
 
 
@@ -80,11 +80,11 @@ function printInsertFields($numbaggages) {
 	<?php
 	for ($it=0; $it < $numbaggages; $it++) {
 		echo "Enter the weight of bag ".number_format($it+1).":
-			<input type='number' name='weight$it' id='baggages' step='any' style='width:60px'>Kg<br>";
+			<input type='number' name='weight$it' id='baggages' step='any' style='width:60px' min='0'>Kg<br>";
 	} 
 	?>
 		</table>
-		<button type="submit" name="finalsubmit">Submit</button>
+		<button type="submit" class="pure-button pure-button-primary" name="finalsubmit">Submit</button>
 	</form>
 	<?php
 
@@ -93,11 +93,10 @@ function printInsertFields($numbaggages) {
 // Connect Oracle...
 if ($db_conn) {
 		
-	if(array_key_exists('insertsubmit', $_POST)){
-			$numbaggages = $_POST['numbaggages'];
-			setcookie('numbaggages',$numbaggages);	
+	if(array_key_exists('numbaggages', $_POST)){
 		//echo "I am in insertsubmit<br>";
-			printInsertFields($_COOKIE['numbaggages']);
+		setcookie('numbaggages',$_POST['numbaggages']);	
+			printInsertFields($_POST['numbaggages']);
 	}	
 	
 	
@@ -123,6 +122,8 @@ if ($db_conn) {
 				");
 				OCICommit($db_conn);
 				
+				//delete cookie
+				setcookie('numbaggages', null, 0);
 				?>
 				<script>
 					alert("Bag add successful.");
@@ -158,7 +159,8 @@ if ($db_conn) {
 	}*/
 
 	if ($_POST && $success) {
-		echo "<script>document.getElementById('numbaggages').value='".$_COOKIE['numbaggages']."'</script>";
+		echo "<script>document.getElementById('numbaggages').value='".$_POST['numbaggages']."'</script>";
+		
 	}
 	/*else {
 		echo "<script>document.getElementById('numbaggages').value='".$_COOKIE['numbaggages']."'</script>";
