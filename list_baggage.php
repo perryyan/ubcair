@@ -43,26 +43,31 @@
 
 <body>
 <div class = "content-customer-area">
-<form method="POST" id="updatebag" name="updatebag">
-<!--
-	Enter the baggage id that you want to update:<input type="text" name="updateBid" size="6">
-	<br>*note: you may only fill in the field that you wish to update<br>
-	Enter new wieght:<input type="text" name="newWeight" size="6">&nbsp;&nbsp;
-	Enter new Status:<input type="text" name="newStatus" size="6">
-	<br>
-	<button type="submit" name="update">Apply changes</button>
-	<br>
-</form>
--->
 
-<select id="listbags" name="listbags" onchange="this.form.submit()">
-		<option selected value = "default">(Choose bag)</option>		
-</select>
-
-</form>
-
+Status of my bags: <br>
 <?php
 include 'oci_functions.php';
+
+function parseStatus($code) {
+		
+	$out = "";	
+		
+	switch($code) {
+		case 0: $out = "In transit";
+				break;
+		
+		case 1: $out = "Lost";
+				break;
+		
+		case 2: $out = "Picked up";
+				break;
+		
+		case 3: $out = "Checked in";
+				break;
+		}
+		return $out;
+}
+		
 
 if($db_conn) {
 		
@@ -73,15 +78,15 @@ if($db_conn) {
 			<tr>
 				<thead>
 				<td>bid</td>
-				<td>last_update</td>
 				<td>status</td>
+				<td>last_update</td>
 				</thead>
 			</tr>";
 		
-		while($row = oci_fetch_array($stmt, OCI_BOTH)) {
+		while($row = oci_fetch_array($options, OCI_BOTH)) {
 			echo "<tr>".
 					"<td>".$row[0]."</td>".
-				  	"<td>".$row[1]."</td>".
+				  	"<td>".parseStatus($row[1])."</td>".
 				  	"<td>".$row[2]."</td>".
 				  "</tr>";
 		}
